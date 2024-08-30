@@ -14,13 +14,11 @@ import metpy.constants as mpconst
 from tqdm import tqdm
 
 
-def get_div_and_vor(circle):
+def get_div_and_vor(circle, alt_dim="alt"):
     D = circle.dudx + circle.dvdy
     vor = circle.dvdx - circle.dudy
 
-    circle = circle.assign(
-        dict(div=(["gpsalt"], D.values), vor=(["gpsalt"], vor.values))
-    )
+    circle = circle.assign(dict(div=(["alt"], D.values), vor=(["alt"], vor.values)))
     return circle
 
 
@@ -44,7 +42,7 @@ def get_density(circle, sonde_dim="sonde_id"):
     return circle
 
 
-def get_vertical_velocity(circle, sonde_dim="sonde_id", alt_dim="gpsalt"):
+def get_vertical_velocity(circle, alt_dim="alt"):
     div = circle.div.where(~np.isnan(circle.div), drop=True).sortby(alt_dim)
     zero_vel = xr.DataArray(data=[0], dims=alt_dim, coords={alt_dim: [0]})
 
@@ -62,7 +60,7 @@ def get_vertical_velocity(circle, sonde_dim="sonde_id", alt_dim="gpsalt"):
     return circle
 
 
-def get_omega(circle, sonde_dim="sonde_id", alt_dim="gpsalt"):
+def get_omega(circle):
     p_vel = (
         -circle.mean_density.values
         * units(circle.mean_density.attrs["units"])
@@ -127,7 +125,7 @@ def fit2d(x, y, u):
     :returns: intercept, dudx, dudy. all shapes: (...)
     """
     # to fix nans, do a copy
-    u_cal = np.array(u, copy=True)
+    u_cal = u.copy()
     # a does not need to be copied as this creates a copy already
     a = np.stack([np.ones_like(x), x, y], axis=-1)
 
@@ -181,7 +179,7 @@ def apply_fit2d(circle):  # can be all circles concatenated together
     return circle
 
 
-def get_xy_coords_for_circles(circle):
+def get_xy_coords_for_circles(circle, alt_dim="alt"):
     x_coor = circle["lon"] * 111.320 * np.cos(np.radians(circle["lat"])) * 1000
     y_coor = circle["lat"] * 110.54 * 1000
     # converting from lat, lon to coordinates in metre from (0,0).
@@ -221,8 +219,8 @@ def get_xy_coords_for_circles(circle):
         circle_lon=circle_x,
         circle_lat=circle_y,
         circle_diameter=circle_diameter,
-        x=(["sonde_id", "gpsalt"], x.values),
-        y=(["sonde_id", "gpsalt"], y.values),
+        x=(["sonde_id", alt_dim], x.values),
+        y=(["sonde_id", alt_dim], y.values),
     )
     circle = circle.assign(new_vars)
     return circle

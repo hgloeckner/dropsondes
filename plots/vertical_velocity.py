@@ -15,7 +15,7 @@ import droputils.circle_products as circle_products  # noqa: E402
 # %%
 
 
-level_3_path = "/Users/helene/Documents/Data/Dropsonde/complete/dropsondes/Level_3/PERCUSION_HALO_Level_3.nc"
+level_3_path = "/Users/helene/Documents/Data/Dropsonde/complete/dropsondes/Level_3/PERCUSION_Level_3.nc"
 
 
 ds_lev3 = xr.open_dataset(level_3_path)
@@ -63,18 +63,20 @@ ds.to_netcdf(
 )
 
 # %%
-sns.set_palette("turbo", n_colors=6)
+sns.set_palette("turbo", n_colors=len(flight_ids))
 fig, axes = plt.subplots(ncols=3, figsize=(18, 6))
 
 ds.sel(position="south")
 for c_type, ax in zip(["south", "center", "north"], axes):
     ds_type = ds.sel(position=c_type)
     for flight_id in ds_type.flight_id.values:
-        ds_type.sel(flight_id=flight_id).w_vel.plot(ax=ax, y="gpsalt", label=flight_id)
+        ds_type.sel(flight_id=flight_id).w_vel.plot(ax=ax, y="alt", label=flight_id)
     ax.set_title(f"circles {c_type}")
 
 sns.despine(offset=10)
 for ax in axes.flatten():
+    ax.axvline(0, alpha=0.5, color="grey")
     ax.legend()
+    # ax.set_xlim(-0.6, 0.2)
 
 # %%
