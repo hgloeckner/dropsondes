@@ -9,25 +9,23 @@ import matplotlib.pyplot as plt
 
 # %%
 
-level_3_path = "/Users/helene/Documents/Data/Dropsonde/complete/dropsondes/Level_3/PERCUSION_Level_3.nc"
+level_3_path = "/Users/helene/Documents/Data/Dropsonde/single_analysis/dropsondes/Level_3/PERCUSION_Level_3.nc"
 
 
 ds = xr.open_dataset(level_3_path)
 # %%
-flight_id = 20240825
+flight_id = 20240906
 ds_flight = (
     ds.where(
-        ds["launch_time_(UTC)"].astype("datetime64")
-        > np.datetime64(date.fromisoformat(str(flight_id - 1))),
+        ds["launch_time"] > np.datetime64(date.fromisoformat(str(flight_id - 1))),
         drop=True,
     )
     .where(
-        ds["launch_time_(UTC)"].astype("datetime64")
-        < np.datetime64(date.fromisoformat(str(flight_id + 1))),
+        ds["launch_time"] < np.datetime64(date.fromisoformat(str(flight_id + 1))),
         drop=True,
     )
-    .swap_dims({"sonde_id": "launch_time_(UTC)"})
-    .sortby("launch_time_(UTC)")
+    .swap_dims({"sonde_id": "launch_time"})
+    .sortby("launch_time")
 )
 
 # %%
@@ -35,7 +33,7 @@ ds_flight = (
 
 fig, ax = plt.subplots(figsize=(18, 6))
 ax.plot(
-    ds_flight["launch_time_(UTC)"].values,
+    ds_flight["launch_time"].values,
     ds_flight.lat.mean(dim="alt").values,
     marker="o",
 )

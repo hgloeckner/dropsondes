@@ -59,9 +59,13 @@ for flight_id in flight_ids:
         pass
 ds = xr.concat(all_data, dim="flight_id")
 ds.to_netcdf(
-    "/Users/helene/Documents/Data/Dropsonde/complete/dropsondes/Level_3/PERCUSION_HALO_Level_4.nc"
+    "/Users/helene/Documents/Data/Dropsonde/complete/dropsondes/Level_3/PERCUSION_Level_4.nc"
 )
 
+# %%
+ds = xr.open_dataset(
+    "/Users/helene/Documents/Data/Dropsonde/complete/dropsondes/Level_3/PERCUSION_HALO_Level_4.nc"
+)
 # %%
 sns.set_palette("turbo", n_colors=len(flight_ids))
 fig, axes = plt.subplots(ncols=3, figsize=(18, 6))
