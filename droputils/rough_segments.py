@@ -12,6 +12,7 @@ starts = {
     "20240829": dict(south="14:05", center="16:14", north="17:45", atr="19:11"),
     "20240831": dict(south="11:20", center="13:00", north="14:20", atr="16:25"),
     "20240903": dict(south="13:45", center="15:00", north="16:30", atr="19:20"),
+    "20240906": dict(west="15:20"),
 }
 ends = {
     "20240811": dict(south="15:20", center="17:15", north="18:23", atr="19:59"),
@@ -26,4 +27,5 @@ ends = {
     "20240827": dict(south="12:56", center="14:15", north="15:50"),
     "20240829": dict(south="15:05", center="17:06", north="18:41", atr="19:47"),
     "20240903": dict(south="14:45", center="16:00", north="17:30", atr="19:55"),
+    "20240906": dict(west="16:20"),
 }
