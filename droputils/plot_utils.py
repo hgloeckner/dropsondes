@@ -1,3 +1,30 @@
+from matplotlib.colors import Normalize
+import seaborn as sns
+import xarray as xr
+import numpy as np
+
+
+def create_colormap_by_values(da, cmap_name):
+    norm = Normalize(vmin=np.nanmin(da.values), vmax=np.nanmax(da.values))
+
+    colormap = sns.color_palette(cmap_name, as_cmap=True)
+
+    def get_color(value):
+        return np.array(colormap(norm(value)))
+
+    # Map the normalized values to colors
+    colors = xr.apply_ufunc(
+        get_color,
+        da,
+        input_core_dims=[[]],
+        output_core_dims=[["c"]],
+        vectorize=True,
+        output_sizes={"c": 3},
+    )
+    colors.name = "colors"
+    return colors, norm
+
+
 def get_colors(circle_names):
     mpi_colors = ["#1A237E", "#1976D2", "#81D4FA", "#00695C"]
     atr_colors = ["#FF8F00", "#FFC107"]
