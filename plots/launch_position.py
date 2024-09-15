@@ -38,3 +38,4 @@ ax.plot(
     marker="o",
 )
 plt.xticks(rotation=45, ha="right")
+print(ds_flight.launch_time.values)

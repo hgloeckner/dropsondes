@@ -54,7 +54,6 @@ def get_lcl_circle(ds, min_h=0, max_h=200, alt_var="alt"):
     mask_p = ~np.isnan(pressure)
     mask = mask_t & mask_p
     dewpoint = mpcalc.dewpoint_from_relative_humidity(temperature[mask], rh[mask])
-    print(pressure[mask])
     lcl_pressure, lcl_temperature = mpcalc.lcl(
         pressure[mask], temperature[mask], dewpoint
     )
