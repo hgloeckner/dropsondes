@@ -13,26 +13,15 @@ import droputils.circle_products as circle_products  # noqa: E402
 
 
 # %%
+folder = "complete"
 
-
-level_3_path = "/Users/helene/Documents/Data/Dropsonde/complete/dropsondes/Level_3/PERCUSION_Level_3.nc"
+level_3_path = f"/Users/helene/Documents/Data/Dropsonde/{folder}/dropsondes/Level_3/PERCUSION_Level_3.nc"
 
 
 ds_lev3 = xr.open_dataset(level_3_path)
 
 flight_ids = list(segments.starts.keys())
-flight_id = flight_ids[0]
-dict_ds_c = data_utils.get_circle_data(ds_lev3, flight_id)
 
-
-# %%
-
-dict_ds_c = data_utils.get_circle_data(ds_lev3, flight_id)
-c_name = list(dict_ds_c.keys())[0]
-circle_south = dict_ds_c[c_name]
-
-# circle_south = circle_south.expand_dims({"circle":1})
-# circle_south = circle_south.assign_coords(circle=("circle", [f"{flight_id}_{c_name}"]))
 
 # %%
 # gives reasonable results
@@ -59,19 +48,25 @@ for flight_id in flight_ids:
         pass
 ds = xr.concat(all_data, dim="flight_id")
 ds.to_netcdf(
-    "/Users/helene/Documents/Data/Dropsonde/complete/dropsondes/Level_3/PERCUSION_Level_4.nc"
+    f"/Users/helene/Documents/Data/Dropsonde/{folder}/dropsondes/Level_4/PERCUSION_Level_4.nc"
 )
+
+# %%
 
 # %%
 ds = xr.open_dataset(
-    "/Users/helene/Documents/Data/Dropsonde/complete/dropsondes/Level_3/PERCUSION_HALO_Level_4.nc"
+    f"/Users/helene/Documents/Data/Dropsonde/{folder}/dropsondes/Level_4/PERCUSION_Level_4.nc"
 )
 # %%
+c_types = ["south", "center", "north"]
+# c_types = ["west"]
+
+
 sns.set_palette("turbo", n_colors=len(flight_ids))
 fig, axes = plt.subplots(ncols=3, figsize=(18, 6))
 
-ds.sel(position="south")
-for c_type, ax in zip(["south", "center", "north"], axes):
+
+for c_type, ax in zip(c_types, axes):
     ds_type = ds.sel(position=c_type)
     for flight_id in ds_type.flight_id.values:
         ds_type.sel(flight_id=flight_id).w_vel.plot(ax=ax, y="alt", label=flight_id)

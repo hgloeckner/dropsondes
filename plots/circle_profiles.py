@@ -13,8 +13,8 @@ import droputils.data_utils as data_utils  # noqa: E402
 import droputils.physics_utils as physics  # noqa: E402
 
 # %%
-flight_id = sys.argv[1]
-config_path = sys.argv[2]
+flight_id = sys.argv[2]
+config_path = sys.argv[1]
 
 config = data_utils.get_config(config_path)
 l3_path = data_utils.get_l3_path(config, flight_id)
@@ -25,7 +25,8 @@ dict_ds_c = data_utils.get_circle_data(ds, flight_id)
 # %%
 plt_variables = ["theta", "rh", "u", "v"]
 plt_units = ["K", "%", r"m s$^{-1}$", r"m s$^{-1}$"]
-alt_var = "gpsalt"
+alt_var = "alt"
+
 
 # %%
 fig, axes = plt.subplots(ncols=len(plt_variables), figsize=(18, 6))
@@ -64,11 +65,15 @@ for circle, ds_c in dict_ds_c.items():
     fl_mean, fl_ind = physics.get_levels_circle(ds_c, alt_var=alt_var)
     max_rh = physics.get_rh_max_circle(ds_c, hmin=8000, alt_var=alt_var)
     lcl_pressure, lcl_temperature = physics.get_lcl_circle(ds_c, alt_var=alt_var)
-    indices = physics.get_heights_from_array(
-        ds_c["p"], values=lcl_pressure.magnitude, alt_var=alt_var
-    )
-    lcl_height = ds_c[alt_var].isel({alt_var: indices}).values
-    print(f"{circle} LCL: {lcl_height}")
+    try:
+        indices = physics.get_heights_from_array(
+            ds_c["p"], values=lcl_pressure.magnitude, alt_var=alt_var
+        )
+    except ValueError:
+        print("all nan pressure")
+    else:
+        lcl_height = ds_c[alt_var].isel({alt_var: indices}).values
+        print(f"{circle} LCL: {lcl_height}")
     # add yticks freezing
     ytick_labels = ytick_labels + [""] * nb_sondes
     yticks = yticks + fl_ind.tolist()
@@ -118,9 +123,11 @@ fig.suptitle(f"Flight {flight_id} (circle means)")
 # add zero line for wind
 for ax in axes[-2:].flatten():
     ax.axvline(0, color="grey", alpha=0.5)
+
 axes[0].set_ylabel(
     f'{ds_c[alt_var].attrs['long_name']} / {ds_c[alt_var].attrs['units']} '
 )
+
 axes[0].legend()
 for ax in axes[1:].flatten():
     ax.set_ylabel("")

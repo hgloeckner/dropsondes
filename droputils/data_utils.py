@@ -18,9 +18,7 @@ def get_l3_path(config, flight_id="20240811", platform="HALO"):
     """
     l3_file = os.path.join(
         config["processor.Gridded.get_l3_dir"]["l3_dir"],
-        config["processor.Gridded.get_l3_filename"]["l3_filename_template"].format(
-            platform=platform
-        ),
+        config["processor.Gridded.get_l3_filename"]["l3_filename"],
     )
     return l3_file
 
@@ -49,12 +47,10 @@ def get_circle_data(ds, flight_id="20240811"):
     for circle in list(circles.keys()):
         try:
             ds_c[circle] = ds.where(
-                ds["launch_time_(UTC)"].astype("datetime64")
-                > circles[circle]["start_time"],
+                ds["launch_time"] > circles[circle]["start_time"],
                 drop=True,
             ).where(
-                ds["launch_time_(UTC)"].astype("datetime64")
-                < circles[circle]["end_time"],
+                ds["launch_time"] < circles[circle]["end_time"],
                 drop=True,
             )
         except ValueError:

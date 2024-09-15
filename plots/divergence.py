@@ -14,18 +14,18 @@ sys.path.append("../")
 # %%
 
 # %%
-l4_path = "/Users/helene/Documents/Data/Dropsonde/complete/dropsondes/Level_3/PERCUSION_Level_4.nc"
+l4_path = "/Users/helene/Documents/Data/Dropsonde/complete/dropsondes/Level_4/PERCUSION_Level_4.nc"
 ds_lev4 = xr.open_dataset(l4_path)
 # %%
 
 
 # Define a custom order for the positions
-custom_order = ["south", "center", "north"]  # Example custom order
+custom_order = ["south", "center", "north", "west"]  # Example custom order
 
 # Convert the dataset to a DataFrame for easier manipulation
 df = (
     (-ds_lev4["div"])
-    .sel(position=["south", "north", "center"])
+    .sel(position=["south", "north", "center", "west"])
     .to_dataframe()
     .reset_index()
 )
@@ -77,6 +77,6 @@ plt.title("Convergence (blue); Divergence (red)")
 
 plt.tight_layout()
 
-quicklook_path = os.path.dirname(l4_path.replace("Level_3", "Quicklooks"))
+quicklook_path = os.path.dirname(l4_path.replace("Level_4", "Quicklooks"))
 os.makedirs(quicklook_path, exist_ok=True)
 fig.savefig(f"{quicklook_path}/divergence.png", dpi=200)

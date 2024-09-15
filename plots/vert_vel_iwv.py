@@ -13,13 +13,15 @@ import droputils.plot_utils as plot_utils  # noqa: E402
 
 # %%
 
-level_4_path = "/Users/helene/Documents/Data/Dropsonde/complete/dropsondes/Level_3/PERCUSION_Level_4.nc"
+level_4_path = "/Users/helene/Documents/Data/Dropsonde/complete/dropsondes/Level_4/PERCUSION_Level_4.nc"
 
 ds_lev4 = xr.open_dataset(level_4_path)
 # %%
 cmap_name = "Blues_d"
 mean_iwv = ds_lev4.iwv.where(ds_lev4.iwv > 10, drop=True).mean(dim=["sonde_id"])
 colors, norm = plot_utils.create_colormap_by_values(mean_iwv, cmap_name=cmap_name)
+# %%
+
 # %%
 plt_var = "w_vel"
 
