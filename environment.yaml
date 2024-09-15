@@ -22,4 +22,5 @@ dependencies:
     - sphinx-autodoc2
     - sphinx-book-theme
     - sphinx-last-updated-by-git
+    - typhon
     - git+https://github.com/atmdrops/pydropsonde.git#egg=pydropsonde 
