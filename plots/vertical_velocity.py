@@ -33,24 +33,29 @@ for flight_id in flight_ids:
     flight_c = []
     for c_name in c_names:
         circle = dict_ds_c[c_name]
-        circle = circle_products.get_xy_coords_for_circles(circle)
+
+        circle = circle_products.get_xy_coords_for_circles(circle, position=c_name)
         circle = circle_products.apply_fit2d(circle)
         circle = circle_products.get_div_and_vor(circle)
         circle = circle_products.get_density(circle)
         circle = circle_products.get_vertical_velocity(circle)
         circle = circle_products.get_omega(circle)
-        circle = circle.expand_dims({"position": [c_name]})
-        circle = circle.expand_dims({"flight_id": [flight_id]})
+        circle = circle_products.add_circle_dimensions(
+            circle, c_name=c_name, flight_id=flight_id
+        )
+
         flight_c.append(circle.copy())
-    try:
-        all_data.append(xr.concat(flight_c, dim="position"))
-    except ValueError:
-        pass
-ds = xr.concat(all_data, dim="flight_id")
+    all_data.append(
+        circle_products.merge_concat_circles(flight_c, dim1="position", dim2="sonde_id")
+    )
+
+ds = circle_products.merge_concat_circles(
+    all_data, dim1="flight_id", join1="outer", dim2="sonde_id"
+)
+
 ds.to_netcdf(
     f"/Users/helene/Documents/Data/Dropsonde/{folder}/dropsondes/Level_4/PERCUSION_Level_4.nc"
 )
-
 # %%
 
 # %%

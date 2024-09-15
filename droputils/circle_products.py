@@ -5,6 +5,8 @@ This is NOT a file that will stay. it is just to get the circle products
 that are in level 4 of pydropsonde
 """
 # %%
+
+
 import numpy as np
 import xarray as xr
 import circle_fit as cf
@@ -12,6 +14,37 @@ import metpy.calc as mpcalc
 from metpy.units import units
 import metpy.constants as mpconst
 from tqdm import tqdm
+
+circle_vars = [
+    "circle_time",
+    "circle_lon",
+    "circle_lat",
+    "circle_diameter",
+    "circle_flight_altitude",
+    "x",
+    "y",
+    "u0",
+    "dudx",
+    "dudy",
+    "v0",
+    "dvdx",
+    "dvdy",
+    "q0",
+    "dqdx",
+    "dqdy",
+    "ta0",
+    "dtadx",
+    "dtady",
+    "p0",
+    "dpdx",
+    "dpdy",
+    "div",
+    "vor",
+    "density",
+    "mean_density",
+    "w_vel",
+    "omega",
+]
 
 
 def get_div_and_vor(circle, alt_dim="alt"):
@@ -179,7 +212,7 @@ def apply_fit2d(circle):  # can be all circles concatenated together
     return circle
 
 
-def get_xy_coords_for_circles(circle, alt_dim="alt"):
+def get_xy_coords_for_circles(circle, position, alt_dim="alt"):
     x_coor = circle["lon"] * 111.320 * np.cos(np.radians(circle["lat"])) * 1000
     y_coor = circle["lat"] * 110.54 * 1000
     # converting from lat, lon to coordinates in metre from (0,0).
@@ -214,7 +247,7 @@ def get_xy_coords_for_circles(circle, alt_dim="alt"):
     y = y_coor - yc  # *111*1000 # difference of sonde lat from mean lat
 
     new_vars = dict(
-        flight_altitude=circle["aircraft_geopotential_altitude"].mean().values,
+        circle_flight_altitude=circle["aircraft_geopotential_altitude"].mean().values,
         circle_time=circle["launch_time"].mean().values,
         circle_lon=circle_x,
         circle_lat=circle_y,
@@ -224,3 +257,36 @@ def get_xy_coords_for_circles(circle, alt_dim="alt"):
     )
     circle = circle.assign(new_vars)
     return circle
+
+
+def add_circle_dimensions(circle, c_name, flight_id):
+    for variable in circle_vars:
+        circle = circle.assign(
+            {
+                variable: circle[variable].expand_dims(
+                    {"position": [c_name], "flight_id": [flight_id]}
+                )
+            }
+        )
+    return circle
+
+
+def merge_concat_circles(
+    circles, dim1="position", join1="exact", dim2="sonde_id", join2="exact"
+):
+    ds_sonde = [ds.drop_dims(dim1) for ds in circles]
+    unused_dims = set(ds_sonde[0].dims) - set(
+        dim for var in ds_sonde[0].data_vars.values() for dim in var.dims
+    )
+    ds_sonde = [ds.drop_dims(unused_dims) for ds in ds_sonde]
+    ds_circle = [ds.drop_dims(dim2) for ds in circles]
+    unused_dims = set(ds_circle[0].dims) - set(
+        dim for var in ds_circle[0].data_vars.values() for dim in var.dims
+    )
+    ds_circle = [ds.drop_dims(unused_dims) for ds in ds_circle]
+    return xr.merge(
+        [
+            xr.concat(ds_sonde, dim=dim2, join=join2),
+            xr.concat(ds_circle, dim=dim1, join=join1),
+        ]
+    )
