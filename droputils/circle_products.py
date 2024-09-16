@@ -270,6 +270,13 @@ def add_circle_dimensions(circle, c_name, flight_id):
     return circle
 
 
+def add_circle_vars(circle, c_name, flight_id):
+    return circle.assign(
+        c_name=("sonde_id", np.repeat(c_name, circle.sonde_id.size)),
+        flight=("sonde_id", np.repeat(flight_id, circle.sonde_id.size)),
+    )
+
+
 def merge_concat_circles(
     circles, dim1="position", join1="exact", dim2="sonde_id", join2="exact"
 ):

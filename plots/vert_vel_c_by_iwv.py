@@ -14,13 +14,10 @@ import droputils.plot_utils as plot_utils  # noqa: E402
 
 # %%
 
-level_4_path = "/Users/helene/Documents/Data/Dropsonde/complete/dropsondes/Level_4/PERCUSION_Level_4.nc"
+level_4_path = "/Users/helene/Documents/Data/Dropsonde/complete/products/HALO/dropsondes/Level_4/PERCUSION_Level_4.nc"
 
 ds_lev4 = xr.open_dataset(level_4_path)
-level_3_path = "/Users/helene/Documents/Data/Dropsonde/complete/dropsondes/Level_3/PERCUSION_Level_3.nc"
-# complete/dropsondes/Level_3
 
-ds_lev3 = xr.open_dataset(level_3_path)
 # %%
 cmap_name = "Blues_d"
 mean_iwv = ds_lev4.iwv.where(ds_lev4.iwv > 10, drop=True).mean(dim=["sonde_id"])
@@ -112,9 +109,7 @@ for ax, moist in zip(axes[:, 1], ["dry", "medium", "moist"]):
 for ax, pos in zip(axes[0, :], ["south", "center", "north"]):
     ax.set_title(f"{pos} circles", pad=15)
 for ax in axes[:, 0]:
-    ax.set_ylabel(
-        f'{ds_lev3.alt.attrs['standard_name']} / {ds_lev3.alt.attrs['units']}'
-    )
+    ax.set_ylabel("altitude / m")
 for ax in axes[2, :]:
     ax.set_xlabel(f"{plt_var} / {unit}")
 

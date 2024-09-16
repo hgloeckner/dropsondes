@@ -9,16 +9,19 @@ sys.path.append("./")
 sys.path.append("../")
 
 import droputils.plot_utils as plot_utils  # noqa: E402
+import droputils.data_utils as data_utils  # noqa: E402
 
 
 # %%
 
-level_4_path = "/Users/helene/Documents/Data/Dropsonde/complete/dropsondes/Level_4/PERCUSION_Level_4.nc"
+level_4_path = "/Users/helene/Documents/Data/Dropsonde/complete/products/HALO/dropsondes/Level_4/PERCUSION_Level_4.nc"
 
 ds_lev4 = xr.open_dataset(level_4_path)
 # %%
 cmap_name = "Blues_d"
-mean_iwv = ds_lev4.iwv.where(ds_lev4.iwv > 10, drop=True).mean(dim=["sonde_id"])
+mean_iwv = data_utils.get_circle_mean(ds_lev4, variable="iwv")
+# %%
+# %%
 colors, norm = plot_utils.create_colormap_by_values(mean_iwv, cmap_name=cmap_name)
 # %%
 
@@ -32,7 +35,7 @@ fig, axes = plt.subplots(ncols=3, figsize=(18, 6))
 for c_type, ax in zip(["south", "center", "north"], axes):
     ds_type = ds_lev4.sel(position=c_type)
     for flight_id in ds_type.flight_id.values:
-        color = colors.sel(flight_id=flight_id, position=c_type).values
+        color = colors.sel(flight=flight_id, c_name=c_type).values
         ds_type.sel(flight_id=flight_id)[plt_var].plot(
             ax=ax, y="alt", label=flight_id, color=color
         )

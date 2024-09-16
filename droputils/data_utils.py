@@ -2,6 +2,7 @@ import configparser
 import os
 from datetime import datetime, date, time
 import numpy as np
+import xarray as xr
 
 import droputils.rough_segments as segments
 
@@ -57,3 +58,17 @@ def get_circle_data(ds, flight_id="20240811"):
             print(f"No sondes for circle {circle}. It is omitted")
 
     return ds_c
+
+
+def get_circle_mean(ds, variable):
+    flights = []
+    for flight in np.unique(ds.flight):
+        grouped_mean = (
+            ds.where(ds.flight == flight, drop=True).groupby("c_name").mean()[variable]
+        )
+        mean_data = xr.DataArray(grouped_mean, dims=["c_name"]).expand_dims(
+            dim={"flight": [flight]}
+        )
+
+        flights.append(mean_data.copy())
+    return xr.concat(flights, dim="flight")

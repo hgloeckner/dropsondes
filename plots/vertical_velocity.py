@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import xarray as xr
 import seaborn as sns
 import sys
+import os
 
 sys.path.append("./")
 sys.path.append("../")
@@ -15,7 +16,7 @@ import droputils.circle_products as circle_products  # noqa: E402
 # %%
 folder = "complete"
 
-level_3_path = f"/Users/helene/Documents/Data/Dropsonde/{folder}/dropsondes/Level_3/PERCUSION_Level_3.nc"
+level_3_path = f"/Users/helene/Documents/Data/Dropsonde/{folder}/products/HALO/dropsondes/Level_3/PERCUSION_Level_3.nc"
 
 
 ds_lev3 = xr.open_dataset(level_3_path)
@@ -40,6 +41,9 @@ for flight_id in flight_ids:
         circle = circle_products.get_density(circle)
         circle = circle_products.get_vertical_velocity(circle)
         circle = circle_products.get_omega(circle)
+        circle = circle_products.add_circle_vars(
+            circle, c_name=c_name, flight_id=flight_id
+        )
         circle = circle_products.add_circle_dimensions(
             circle, c_name=c_name, flight_id=flight_id
         )
@@ -53,15 +57,14 @@ ds = circle_products.merge_concat_circles(
     all_data, dim1="flight_id", join1="outer", dim2="sonde_id"
 )
 
-ds.to_netcdf(
-    f"/Users/helene/Documents/Data/Dropsonde/{folder}/dropsondes/Level_4/PERCUSION_Level_4.nc"
-)
+
+l4_path = os.path.dirname(level_3_path.replace("Level_3", "Level_4"))
+# %%
+ds.to_netcdf(os.path.join(l4_path, "PERCUSION_Level_4.nc"))
 # %%
 
 # %%
-ds = xr.open_dataset(
-    f"/Users/helene/Documents/Data/Dropsonde/{folder}/dropsondes/Level_4/PERCUSION_Level_4.nc"
-)
+ds = xr.open_dataset(os.path.join(l4_path, "PERCUSION_Level_4.nc"))
 # %%
 c_types = ["south", "center", "north"]
 # c_types = ["west"]
@@ -72,10 +75,14 @@ fig, axes = plt.subplots(ncols=3, figsize=(18, 6))
 
 
 for c_type, ax in zip(c_types, axes):
-    ds_type = ds.sel(position=c_type)
+    ds_type = ds.sel(position=[val for val in ds.position.values if c_type in val])
     for flight_id in ds_type.flight_id.values:
-        ds_type.sel(flight_id=flight_id).w_vel.plot(ax=ax, y="alt", label=flight_id)
+        for pos in ds_type.position.values:
+            ds_type.sel(flight_id=flight_id, position=pos).w_vel.plot(
+                ax=ax, y="alt", label=flight_id
+            )
     ax.set_title(f"circles {c_type}")
+
 
 sns.despine(offset=10)
 for ax in axes.flatten():
