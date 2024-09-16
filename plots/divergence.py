@@ -14,7 +14,7 @@ sys.path.append("../")
 # %%
 
 # %%
-l4_path = "/Users/helene/Documents/Data/Dropsonde/complete/dropsondes/Level_4/PERCUSION_Level_4.nc"
+l4_path = "/Users/helene/Documents/Data/Dropsonde/complete/products/HALO/dropsondes/Level_4/PERCUSION_Level_4.nc"
 ds_lev4 = xr.open_dataset(l4_path)
 # %%
 

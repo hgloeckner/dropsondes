@@ -11,17 +11,19 @@ sys.path.append("./")
 sys.path.append("../")
 
 import droputils.plot_utils as plot_utils  # noqa: E402
+import droputils.data_utils as data_utils  # noqa: E402
 
 # %%
 
 # %%
-l4_path = "/Users/helene/Documents/Data/Dropsonde/complete/dropsondes/Level_3/PERCUSION_Level_4.nc"
+l4_path = "/Users/helene/Documents/Data/Dropsonde/complete/products/HALO/dropsondes/Level_4/PERCUSION_Level_4.nc"
 ds_lev4 = xr.open_dataset(l4_path)
 
 # %%
-
-cmap_name = "Blues"
-mean_iwv = ds_lev4.iwv.where(ds_lev4.iwv > 10, drop=True).mean(dim=["sonde_id"])
+cmap_name = "Blues_d"
+mean_iwv = data_utils.get_circle_mean(ds_lev4, variable="iwv").sel(
+    c_name=["south", "center", "north"]
+)
 colors, norm = plot_utils.create_colormap_by_values(mean_iwv, cmap_name=cmap_name)
 # %%
 sonde_dim = "sonde_id"
@@ -50,7 +52,7 @@ fig, ax = plt.subplots(figsize=(10, 6))
 for c_type in ["south", "center", "north"]:
     ds_type = ds_int_omega.sel(position=c_type)
     for flight_id in ds_type.flight_id.values:
-        color = colors.sel(flight_id=flight_id, position=c_type).values
+        color = colors.sel(flight=flight_id, c_name=c_type).values
         ax.scatter(
             x=ds_type.flight_id,
             y=ds_type.values,
@@ -65,7 +67,7 @@ cb_ax = fig.add_axes([0.92, 0.08, 0.01, 0.8])
 cbar = fig.colorbar(plt.cm.ScalarMappable(norm=norm, cmap=cmap), cax=cb_ax)
 cbar.ax.set_ylabel("IWV", rotation=-90, labelpad=15)
 
-quicklook_path = os.path.dirname(l4_path.replace("Level_3", "Quicklooks"))
+quicklook_path = os.path.dirname(l4_path.replace("Level_4", "Quicklooks"))
 os.makedirs(quicklook_path, exist_ok=True)
 fig.savefig(f"{quicklook_path}/{flight_id}_integrated_omega.png", dpi=200)
 

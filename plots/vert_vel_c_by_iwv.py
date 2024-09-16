@@ -10,6 +10,7 @@ sys.path.append("./")
 sys.path.append("../")
 
 import droputils.plot_utils as plot_utils  # noqa: E402
+import droputils.data_utils as data_utils  # noqa: E402
 
 
 # %%
@@ -20,14 +21,14 @@ ds_lev4 = xr.open_dataset(level_4_path)
 
 # %%
 cmap_name = "Blues_d"
-mean_iwv = ds_lev4.iwv.where(ds_lev4.iwv > 10, drop=True).mean(dim=["sonde_id"])
+mean_iwv = data_utils.get_circle_mean(ds_lev4, variable="iwv")
 colors, norm = plot_utils.create_colormap_by_values(mean_iwv, cmap_name=cmap_name)
 
 # %%
 plt_var = "omega"
 unit = "Pa/s"
 
-mode = "compare_type"
+mode = "compare_all"
 save_name = f"{plt_var}_by_iwv_{mode}.png"
 
 quantiles = [0, 0.33, 0.66, 1]
@@ -39,9 +40,9 @@ fig, axes = plt.subplots(ncols=3, nrows=3, figsize=(18, 18), sharey=True, sharex
 for j, position in enumerate(["south", "center", "north"]):
     ds_pos = ds_lev4.sel(position=position)
     if mode == "compare_all":
-        ds_iwv_quantile = ds_lev4.iwv.mean("sonde_id").quantile(quantiles)
+        ds_iwv_quantile = mean_iwv.quantile(quantiles)
     elif mode == "compare_type":
-        ds_iwv_quantile = ds_pos.iwv.mean("sonde_id").quantile(quantiles)
+        ds_iwv_quantile = mean_iwv.sel(c_name=position).quantile(quantiles)
 
     ds_iwv_quantile_values = ds_iwv_quantile.values
     ds_iwv_quantile_values[-1] = ds_iwv_quantile_values[-1] + 0.01
@@ -51,27 +52,22 @@ for j, position in enumerate(["south", "center", "north"]):
 
     for qu in range(3):
         ax = axes[qu]
-        ds_iwv_quant = (
-            ds_pos[plt_var]
-            .where(
-                ds_pos.iwv.mean("sonde_id")
-                > ds_iwv_quantile.isel(quantile=qu, drop=True).values - 0.001
-            )
-            .where(
-                ds_pos.iwv.mean("sonde_id")
-                < ds_iwv_quantile.isel(quantile=qu + 1, drop=True).values
-            )
-            .dropna("alt", how="all")
-            .dropna("flight_id", how="all")
-        )
+        c_iwv = data_utils.get_circle_mean(ds_pos, variable="iwv").sel(c_name=position)
 
-        for flight_id in ds_iwv_quant.flight_id:
-            color = colors.sel(flight_id=flight_id, position=position).values
-            plt_ds = ds_iwv_quant.sel(flight_id=flight_id)
+        qu_flights = (
+            ds_pos[plt_var]
+            .where(c_iwv > ds_iwv_quantile.isel(quantile=qu).values - 0.001)
+            .where(c_iwv < ds_iwv_quantile.isel(quantile=qu + 1).values)
+            .dropna(dim="flight", how="all")
+            .flight.values
+        )
+        for flight_id in qu_flights:
+            color = colors.sel(flight=flight_id, c_name=position).values
+            plt_ds = ds_pos.sel(flight_id=flight_id)[plt_var]
             plt_ds.plot(
                 ax=axes[qu, j],
                 y="alt",
-                label=f"{flight_id.values}",
+                label=f"{flight_id}",
                 color=color,
             )
 
@@ -115,4 +111,4 @@ for ax in axes[2, :]:
 
 quicklook_path = os.path.dirname(level_4_path.replace("Level_4", "Quicklooks"))
 os.makedirs(quicklook_path, exist_ok=True)
-fig.savefig(f"{quicklook_path}/{save_name}", dpi=200)
+# fig.savefig(f"{quicklook_path}/{save_name}", dpi=200)

@@ -2,6 +2,7 @@
 import matplotlib.pyplot as plt
 import xarray as xr
 import seaborn as sns
+
 import sys
 import os
 
@@ -20,8 +21,6 @@ ds_lev4 = xr.open_dataset(level_4_path)
 # %%
 cmap_name = "Blues_d"
 mean_iwv = data_utils.get_circle_mean(ds_lev4, variable="iwv")
-# %%
-# %%
 colors, norm = plot_utils.create_colormap_by_values(mean_iwv, cmap_name=cmap_name)
 # %%
 
@@ -33,12 +32,15 @@ cmap = sns.color_palette(cmap_name, as_cmap=True)
 fig, axes = plt.subplots(ncols=3, figsize=(18, 6))
 
 for c_type, ax in zip(["south", "center", "north"], axes):
-    ds_type = ds_lev4.sel(position=c_type)
+    ds_type = ds_lev4.sel(
+        position=[val for val in ds_lev4.position.values if c_type in val]
+    )
     for flight_id in ds_type.flight_id.values:
         color = colors.sel(flight=flight_id, c_name=c_type).values
-        ds_type.sel(flight_id=flight_id)[plt_var].plot(
-            ax=ax, y="alt", label=flight_id, color=color
-        )
+        for pos in ds_type.position.values:
+            ds_type.sel(flight_id=flight_id, position=pos)[plt_var].plot(
+                ax=ax, y="alt", label=flight_id, color=color
+            )
     ax.set_title(f"circles {c_type}")
 fig.tight_layout()
 sns.despine(offset=10)
