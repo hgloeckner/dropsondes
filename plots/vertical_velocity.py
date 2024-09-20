@@ -16,10 +16,10 @@ import droputils.circle_products as circle_products  # noqa: E402
 # %%
 folder = "complete"
 
-level_3_path = f"/Users/helene/Documents/Data/Dropsonde/{folder}/products/HALO/dropsondes/Level_3/PERCUSION_Level_3.nc"
+level_3_path = f"/Users/helene/Documents/Data/Dropsonde/{folder}/products/HALO/dropsondes/Level_3/PERCUSION_Level_3.zarr"
 
 
-ds_lev3 = xr.open_dataset(level_3_path)
+ds_lev3 = xr.open_dataset(level_3_path, engine="zarr")
 
 flight_ids = list(segments.starts.keys())
 
@@ -47,15 +47,15 @@ for flight_id in flight_ids:
         circle = circle_products.add_circle_dimensions(
             circle, c_name=c_name, flight_id=flight_id
         )
-
         flight_c.append(circle.copy())
+
     all_data.append(
-        circle_products.merge_concat_circles(flight_c, dim1="position", dim2="sonde_id")
+        circle_products.merge_concat_circles(
+            flight_c, dim1="circle_id", dim2="sonde_id"
+        )
     )
 
-ds = circle_products.merge_concat_circles(
-    all_data, dim1="flight_id", join1="outer", dim2="sonde_id"
-)
+ds = circle_products.merge_concat_circles(all_data, dim1="circle_id", dim2="sonde_id")
 
 
 l4_path = os.path.dirname(level_3_path.replace("Level_3", "Level_4"))

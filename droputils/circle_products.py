@@ -20,8 +20,6 @@ circle_vars = [
     "circle_lat",
     "circle_diameter",
     "circle_flight_altitude",
-    "x",
-    "y",
     "u0",
     "dudx",
     "dudy",
@@ -39,7 +37,6 @@ circle_vars = [
     "dpdy",
     "div",
     "vor",
-    "density",
     "mean_density",
     "w_vel",
     "omega",
@@ -263,7 +260,7 @@ def add_circle_dimensions(circle, c_name, flight_id):
         circle = circle.assign(
             {
                 variable: circle[variable].expand_dims(
-                    {"position": [c_name], "flight_id": [flight_id]}
+                    {"circle_id": [f"{flight_id}_{c_name}"]}
                 )
             }
         )
@@ -272,13 +269,16 @@ def add_circle_dimensions(circle, c_name, flight_id):
 
 def add_circle_vars(circle, c_name, flight_id):
     return circle.assign(
-        c_name=("sonde_id", np.repeat(c_name, circle.sonde_id.size)),
-        flight=("sonde_id", np.repeat(flight_id, circle.sonde_id.size)),
+        c_name=(["circle_id", "sonde_id"], [np.repeat(c_name, circle.sonde_id.size)]),
+        flight_id=(
+            ["circle_id", "sonde_id"],
+            [np.repeat(flight_id, circle.sonde_id.size)],
+        ),
     )
 
 
 def merge_concat_circles(
-    circles, dim1="position", join1="exact", dim2="sonde_id", join2="exact"
+    circles, dim1="circle_id", join1="exact", dim2="sonde_id", join2="exact"
 ):
     ds_sonde = [ds.drop_dims(dim1) for ds in circles]
     unused_dims = set(ds_sonde[0].dims) - set(
@@ -290,9 +290,17 @@ def merge_concat_circles(
         dim for var in ds_circle[0].data_vars.values() for dim in var.dims
     )
     ds_circle = [ds.drop_dims(unused_dims) for ds in ds_circle]
+    both_dim_vars = [
+        var
+        for var in circles[0].variables
+        if dim1 in circles[0][var].dims
+        if dim2 in circles[0][var].dims
+    ]
+    ds_both = [ds[both_dim_vars] for ds in circles]
     return xr.merge(
         [
             xr.concat(ds_sonde, dim=dim2, join=join2),
             xr.concat(ds_circle, dim=dim1, join=join1),
+            xr.concat(ds_both, dim=dim1),
         ]
     )
