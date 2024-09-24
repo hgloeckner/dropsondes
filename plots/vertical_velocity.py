@@ -60,6 +60,9 @@ ds = circle_products.merge_concat_circles(all_data, dim1="circle_id", dim2="sond
 
 l4_path = os.path.dirname(level_3_path.replace("Level_3", "Level_4"))
 # %%
+ds.to_zarr(os.path.join(l4_path, "PERCUSION_Level_4.zarr"))
+
+# %%
 ds.to_netcdf(os.path.join(l4_path, "PERCUSION_Level_4.nc"))
 # %%
 
