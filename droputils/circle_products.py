@@ -264,6 +264,14 @@ def add_circle_dimensions(circle, c_name, flight_id):
                 )
             }
         )
+    circle = circle.assign_coords(
+        dict(
+            circle_id_sonde=(
+                ["sonde_id"],
+                np.repeat(f"{flight_id}_{c_name}", circle.sonde_id.size),
+            )
+        )
+    )
     return circle
 
 
@@ -280,6 +288,19 @@ def add_circle_vars(circle, c_name, flight_id):
 def merge_concat_circles(
     circles, dim1="circle_id", join1="exact", dim2="sonde_id", join2="exact"
 ):
+    circles = [
+        circle.reset_coords(
+            [
+                "aircraft_latitude",
+                "aircraft_longitude",
+                "aircraft_msl_altitude",
+                "launch_time",
+                "circle_id_sonde",
+            ]
+        )
+        for circle in circles
+    ]
+
     ds_sonde = [ds.drop_dims(dim1) for ds in circles]
     unused_dims = set(ds_sonde[0].dims) - set(
         dim for var in ds_sonde[0].data_vars.values() for dim in var.dims
@@ -297,10 +318,19 @@ def merge_concat_circles(
         if dim2 in circles[0][var].dims
     ]
     ds_both = [ds[both_dim_vars] for ds in circles]
-    return xr.merge(
+    merged = xr.merge(
         [
             xr.concat(ds_sonde, dim=dim2, join=join2),
             xr.concat(ds_circle, dim=dim1, join=join1),
             xr.concat(ds_both, dim=dim1),
         ]
     )
+    return merged.assign_coords(
+        dict(
+            aircraft_latitude=merged.aircraft_latitude,
+            aircraft_longitude=merged.aircraft_longitude,
+            aircraft_msl_altitude=merged.aircraft_msl_altitude,
+            launch_time=merged.launch_time,
+            circle_id_sonde=merged.circle_id_sonde,
+        )
+    ).sortby("launch_time")

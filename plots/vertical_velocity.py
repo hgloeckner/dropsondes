@@ -48,6 +48,7 @@ for flight_id in flight_ids:
             circle, c_name=c_name, flight_id=flight_id
         )
         flight_c.append(circle.copy())
+        print(circle.coords)
 
     all_data.append(
         circle_products.merge_concat_circles(
