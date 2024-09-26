@@ -48,7 +48,6 @@ for flight_id in flight_ids:
             circle, c_name=c_name, flight_id=flight_id
         )
         flight_c.append(circle.copy())
-        print(circle.coords)
 
     all_data.append(
         circle_products.merge_concat_circles(
@@ -61,14 +60,14 @@ ds = circle_products.merge_concat_circles(all_data, dim1="circle_id", dim2="sond
 
 l4_path = os.path.dirname(level_3_path.replace("Level_3", "Level_4"))
 # %%
-ds.to_zarr(os.path.join(l4_path, "PERCUSION_Level_4.zarr"))
+ds.to_zarr(os.path.join(l4_path, "PERCUSION_Level_4.zarr"), mode="w")
 
 # %%
 ds.to_netcdf(os.path.join(l4_path, "PERCUSION_Level_4.nc"))
 # %%
 
 # %%
-ds = xr.open_dataset(os.path.join(l4_path, "PERCUSION_Level_4.nc"))
+ds = xr.open_dataset(os.path.join(l4_path, "PERCUSION_Level_4.zarr"), engine="zarr")
 # %%
 c_types = ["south", "center", "north"]
 # c_types = ["west"]
