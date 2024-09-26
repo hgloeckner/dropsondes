@@ -35,8 +35,10 @@ df_pivot = df.stack().reset_index()
 pivot_df = df_pivot.pivot_table(index="alt", columns=["level_0", "level_1"], values=0)
 
 # %%
-fig, ax = plt.subplots(ncols=1, figsize=(24, 6))
-im = sns.heatmap(pivot_df, cmap="cmo.balance", ax=ax, center=0)
+fig, ax = plt.subplots(figsize=(24, 6))
+im = sns.heatmap(
+    pivot_df, cmap="cmo.balance", ax=ax, center=0, cbar_kws=dict(pad=0.01, label="div")
+)
 
 
 xticks = ax.get_xticks()
@@ -50,7 +52,7 @@ major_ticks = [
 ]
 labels = ["\n" * (i % 2) + unique_id for i, unique_id in enumerate(unique_ids)]
 ax.set_xticks(major_ticks, labels=labels, rotation=0, fontsize=12, fontweight="bold")
-ax.set_ylabel("")
+ax.set_xlabel("")
 
 ax.invert_yaxis()
 y_ticks = np.arange(0, len(df.columns), 150)
@@ -64,6 +66,7 @@ border_pos = [
 ]
 for border in border_pos:
     ax.axvline(border, color="black")
+
 fig.tight_layout()
 
 # %%
