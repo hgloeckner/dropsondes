@@ -13,11 +13,13 @@ sys.path.append("../../")
 import droputils.data_utils as data_utils  # noqa: E402
 
 # %%
+"""
 root = "ipns://latest.orcestra-campaign.org"
 ds_lev3 = xr.open_dataset(
     f"{root}/products/HALO/dropsondes/Level_3/PERCUSION_Level_3.zarr",
     engine="zarr",
 )
+"""
 # %%
 root = "~/Documents/Data/Dropsonde/complete/"
 ds_lev3 = xr.open_dataset(
@@ -104,15 +106,20 @@ sns.histplot(
     x=plt_var,
     hue="iwv",
     multiple="stack",
-    palette="cmo.ice",
+    palette="cmo.ice_r",
     bins=75,
     legend=False,
     edgecolor=None,
+    hue_norm=(40, 70),
+)
+
+
+"""
     cbar_kws=dict(
         vmin=40,
         vmax=60,
     ),
-)
+"""
 ax.axvspan(0, 3, alpha=0.2, color="gray")
 ax.text(0.5, 25, "doldrums", color="gray")
 ax.set_xlabel(xlabel)
@@ -132,15 +139,15 @@ sns.despine(fig)
 sns.histplot(
     pd_df_sd,
     x=plt_var,
-    hue="iwv",
+    hue="low_wind",
     multiple="stack",
-    palette="cmo.ice",
+    palette="cmo.speed",
     bins=75,
     legend=False,
     edgecolor=None,
+    hue_norm=(0, 12),
 )
-ax.axvspan(0, 3, alpha=0.2, color="gray")
-ax.text(0.5, 28, "doldrums", color="gray")
+
 ax.set_xlabel(xlabel)
 mean = pd_df_sd[plt_var].mean()
 fig.tight_layout()
