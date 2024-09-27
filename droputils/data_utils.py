@@ -3,6 +3,7 @@ import os
 from datetime import datetime, date, time
 import numpy as np
 import xarray as xr
+import pandas as pd
 
 import droputils.rough_segments as segments
 
@@ -72,3 +73,25 @@ def get_circle_mean(ds, variable):
 
         flights.append(mean_data.copy())
     return xr.concat(flights, dim="flight")
+
+
+def add_operator(ds, sonde_op):
+    def assign_operator(time):
+        date = pd.Timestamp(time).date()
+        return sonde_op[date]
+
+    df = ds.launch_time.to_series()
+    df = df.apply(assign_operator)
+    return ds.assign_coords(operator=xr.DataArray(df, name="operator"))
+
+
+def add_island(ds):
+    def assign_island(lon):
+        if lon > -40:
+            return "SAL"
+        else:
+            return "BB"
+
+    df = ds.aircraft_longitude.to_series()
+    df = df.apply(assign_island)
+    return ds.assign_coords(island=xr.DataArray(df, name="island"))

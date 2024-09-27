@@ -37,7 +37,13 @@ pivot_df = df_pivot.pivot_table(index="alt", columns=["level_0", "level_1"], val
 # %%
 fig, ax = plt.subplots(figsize=(24, 6))
 im = sns.heatmap(
-    pivot_df, cmap="cmo.balance", ax=ax, center=0, cbar_kws=dict(pad=0.01, label="div")
+    pivot_df,
+    cmap="coolwarm",
+    ax=ax,
+    center=0,
+    vmin=-4e-5,
+    vmax=4e-5,
+    cbar_kws=dict(pad=0.01, label="div"),
 )
 
 
@@ -57,7 +63,7 @@ ax.set_xlabel("")
 ax.invert_yaxis()
 y_ticks = np.arange(0, len(df.columns), 150)
 ax.set_yticks(y_ticks)
-ax.set_yticklabels(y_ticks)
+ax.set_yticklabels(df.columns[y_ticks].astype(int))
 ax.set_ylabel("altitude / m")
 
 border_pos = [
