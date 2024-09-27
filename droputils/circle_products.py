@@ -216,7 +216,6 @@ def get_xy_coords_for_circles(circle, position, alt_dim="alt"):
     c_xc = np.full(np.size(x_coor, 1), np.nan)
     c_yc = np.full(np.size(x_coor, 1), np.nan)
     c_r = np.full(np.size(x_coor, 1), np.nan)
-
     for j in range(np.size(x_coor, 1)):
         a = ~np.isnan(x_coor.values[:, j])
         if a.sum() > 4:

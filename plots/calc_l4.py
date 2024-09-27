@@ -1,7 +1,5 @@
 # %%
-import matplotlib.pyplot as plt
 import xarray as xr
-import seaborn as sns
 import sys
 import os
 
@@ -55,6 +53,7 @@ for flight_id in flight_ids:
         )
     )
 
+
 ds = circle_products.merge_concat_circles(all_data, dim1="circle_id", dim2="sonde_id")
 
 
@@ -64,33 +63,5 @@ ds.to_zarr(os.path.join(l4_path, "PERCUSION_Level_4.zarr"), mode="w")
 
 # %%
 ds.to_netcdf(os.path.join(l4_path, "PERCUSION_Level_4.nc"))
-# %%
-
-# %%
-ds = xr.open_dataset(os.path.join(l4_path, "PERCUSION_Level_4.zarr"), engine="zarr")
-# %%
-c_types = ["south", "center", "north"]
-# c_types = ["west"]
-
-
-sns.set_palette("turbo", n_colors=len(flight_ids))
-fig, axes = plt.subplots(ncols=3, figsize=(18, 6))
-
-
-for c_type, ax in zip(c_types, axes):
-    ds_type = ds.sel(position=[val for val in ds.position.values if c_type in val])
-    for flight_id in ds_type.flight_id.values:
-        for pos in ds_type.position.values:
-            ds_type.sel(flight_id=flight_id, position=pos).w_vel.plot(
-                ax=ax, y="alt", label=flight_id
-            )
-    ax.set_title(f"circles {c_type}")
-
-
-sns.despine(offset=10)
-for ax in axes.flatten():
-    ax.axvline(0, alpha=0.5, color="grey")
-    ax.legend()
-    # ax.set_xlim(-0.6, 0.2)
 
 # %%

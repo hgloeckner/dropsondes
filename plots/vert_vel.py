@@ -3,6 +3,7 @@ import xarray as xr
 import os
 import matplotlib.pyplot as plt
 import seaborn as sns
+import numpy as np
 
 # %%
 folder = "complete"
@@ -30,7 +31,6 @@ ds_island = xr.DataArray(island, dims="sonde_id", name="island")
 c_island = xr.DataArray(circle_island, dims="circle_id", name="c_island")
 ds = ds_lev4.assign_coords(island=ds_island, c_island=c_island).sortby("launch_time")
 # %%
-ds_outlier = ["20240829_center", "20240818_center"]
 # %%
 ds_omega = ds.omega.interpolate_na(dim="alt")
 
@@ -64,3 +64,21 @@ fig.tight_layout()
 quicklook_path = "/Users/helene/Documents/Data/Dropsonde/orcestra_plots"
 
 fig.savefig(f"{quicklook_path}/omega.png", transparent=True)
+# %%
+
+
+np.isnan(ds.rh.where(ds.circle_id_sonde == "20240829_center")).all()
+
+ds_outlier = ds.where(ds.circle_id_sonde == "20240829_center", drop=True)
+for sonde_id in ds_outlier.sonde_id:
+    # ds_outlier.w_spd.sel(sonde_id=sonde_id).plot(y='alt')
+    plt.scatter(
+        ds_outlier.lon.sel(sonde_id=sonde_id),
+        ds_outlier.lat.sel(sonde_id=sonde_id),
+        label=sonde_id.values,
+    )
+    plt.legend()
+
+# %%
+plt_ds = ds.sel(sonde_id="234020748")
+plt_ds.plot()

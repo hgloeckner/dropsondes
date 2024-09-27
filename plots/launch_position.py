@@ -9,15 +9,15 @@ import matplotlib.pyplot as plt
 
 # %%
 
-level_3_path = "/Users/helene/Documents/Data/Dropsonde/complete/products/HALO/dropsondes/Level_3/PERCUSION_Level_3.nc"
+level_3_path = "/Users/helene/Documents/Data/Dropsonde/complete/products/HALO/dropsondes/Level_3/PERCUSION_Level_3.zarr"
 
 
-ds = xr.open_dataset(level_3_path)
+ds = xr.open_dataset(level_3_path, engine="zarr")
 
 # %%
 ds
 # %%
-flight_id = 20240912
+flight_id = 20240919
 ds_flight = (
     ds.where(
         ds["launch_time"] > np.datetime64(date.fromisoformat(str(flight_id))),
