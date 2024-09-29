@@ -56,11 +56,13 @@ ds_out = (
 )
 ax.set_ylabel("altitude / m")
 
+ax.axvline(0, color="gray", alpha=0.2)
 sns.despine(offset=10)
 ax.legend()
+ax.set_ylim(-5, 12000)
 fig.tight_layout()
 
-# %%
+
 quicklook_path = "/Users/helene/Documents/Data/Dropsonde/orcestra_plots"
 
 fig.savefig(f"{quicklook_path}/omega.png", transparent=True)

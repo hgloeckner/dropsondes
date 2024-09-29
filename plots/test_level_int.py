@@ -10,7 +10,6 @@ import os
 root = "ipns://latest.orcestra-campaign.org"
 
 
-# %%
 ds_lev4 = xr.open_zarr(
     f"{root}/products/HALO/dropsondes/Level_4/PERCUSION_Level_4.zarr"
 )
@@ -42,4 +41,4 @@ sns.despine(offset=10)
 ax.legend()
 fig.tight_layout()
 
-fig.savefig(os.path.join(save_path, "lev1_both"), transparent=True)
+fig.savefig(os.path.join(save_path, "lev1_both"))  # , transparent=True)

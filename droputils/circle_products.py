@@ -242,7 +242,7 @@ def get_xy_coords_for_circles(circle, position, alt_dim="alt"):
     y = y_coor - yc  # *111*1000 # difference of sonde lat from mean lat
 
     new_vars = dict(
-        circle_flight_altitude=circle["aircraft_geopotential_altitude"].mean().values,
+        circle_flight_altitude=circle["aircraft_msl_altitude"].mean().values,
         circle_time=circle["launch_time"].mean().values,
         circle_lon=circle_x,
         circle_lat=circle_y,
