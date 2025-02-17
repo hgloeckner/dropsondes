@@ -22,7 +22,7 @@ config.read("../orcestra_drop.cfg")
 root = "ipns://latest.orcestra-campaign.org/"
 l3_ds = xr.open_dataset(
     f"{root}/products/HALO/dropsondes/Level_3/PERCUSION_Level_3.zarr", engine="zarr"
-)
+).rename({"interp_time": "bin_average_time"})
 
 gridded = Gridded(sondes={}, global_attrs={})
 gridded.set_l3_ds(l3_ds.where((l3_ds["u_qc"] == 0) & (l3_ds["p_qc"] == 0), drop=True))
@@ -33,7 +33,7 @@ gridded.alt_dim = "altitude"
 gridded.sonde_dim = "sonde"
 # %%
 # %%
-circles = pydropsonde.pipeline.create_and_populate_circle_object(gridded, None)
+circles = pydropsonde.pipeline.create_and_populate_circle_object(gridded, None).circles
 
 good_circles = get_good(circles, thres=12)
 

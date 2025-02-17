@@ -105,3 +105,21 @@ def remove_one(circles, config, gap_sonde, int=False, w=None):
     )
     interp_na(circles=circles_play, interpolate=int, config=config, w=w)
     return circles_play
+
+
+def remove_from_one(gap_alt, gap_depth, gap_sonde, circles, config, int=False, w=None):
+    try:
+        config.add_section("circles.Circle.one_gap_one_sonde")
+    except configparser.DuplicateSectionError:
+        pass
+    config.set("circles.Circle.one_gap_one_sonde", "alt", str(gap_alt))
+    config.set("circles.Circle.one_gap_one_sonde", "depth", str(gap_depth))
+    config.set("circles.Circle.one_gap_one_sonde", "sonde_id", str(gap_sonde))
+    circles_play = copy.deepcopy(circles)
+    get_xy_circles(circles_play, config)
+    iterate_Circle_method_over_dict_of_Circle_objects(
+        circles_play, ["one_gap_one_sonde"], config=config
+    )
+
+    interp_na(circles=circles_play, interpolate=int, config=config, w=w)
+    return circles_play
