@@ -90,3 +90,18 @@ def iterate_circle(circles, config, int=False, w=None):
     interp_na(circles=circles_play, interpolate=int, config=config, w=w)
     calc_products(circles_play, config)
     return circles_play
+
+
+def remove_one(circles, config, gap_sonde, int=False, w=None):
+    try:
+        config.add_section("circles.Circle.remove_sonde")
+    except configparser.DuplicateSectionError:
+        pass
+    config.set("circles.Circle.remove_sonde", "sonde_id", str(gap_sonde))
+    circles_play = copy.deepcopy(circles)
+    get_xy_circles(circles_play, config)
+    iterate_Circle_method_over_dict_of_Circle_objects(
+        circles_play, ["remove_sonde"], config=config
+    )
+    interp_na(circles=circles_play, interpolate=int, config=config, w=w)
+    return circles_play
