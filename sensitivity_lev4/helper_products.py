@@ -123,3 +123,18 @@ def remove_from_one(gap_alt, gap_depth, gap_sonde, circles, config, int=False, w
 
     interp_na(circles=circles_play, interpolate=int, config=config, w=w)
     return circles_play
+
+
+def remove_from_all(gap_length, circles, config, int=False, w=None):
+    try:
+        config.add_section("circles.Circle.remove_values")
+    except configparser.DuplicateSectionError:
+        pass
+    config.set("circles.Circle.remove_values", "n_gap", str(gap_length))
+    circles_play = copy.deepcopy(circles)
+    get_xy_circles(circles_play, config)
+    iterate_Circle_method_over_dict_of_Circle_objects(
+        circles_play, ["remove_values"], config=config
+    )
+    interp_na(circles=circles_play, interpolate=int, config=config, w=w)
+    return circles_play
