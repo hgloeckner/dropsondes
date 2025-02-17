@@ -8,3 +8,4 @@ __pycache__/
 *.png
 images/
 dropsonde_data/products/
+dropsonde_data/autocorrelation*
