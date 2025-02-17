@@ -42,8 +42,8 @@ def get_autocorr_xr(ds, alt_dim="altitude", maxalt=10000, variables=["u", "v"]):
 
 ds = get_autocorr_xr(l3_ds, variables=["u", "v", "p", "theta", "q"])
 
-
-path = "/Users/helene/Documents/Orcestra/dropsonde/dropsonde_data/"
+# %%
+path = "../dropsonde_data/"
 write_ds(
     ds,
     dir=path,
@@ -51,7 +51,7 @@ write_ds(
     alt_dim="altitude",
 )
 # %%
-path = "/Users/helene/Documents/Orcestra/dropsonde/dropsonde_data/"
+path = "../dropsonde_data/"
 autocorr = xr.open_dataset(f"{path}autocorrelation.zarr")
 
 vars = ["u", "v", "p", "q", "theta"]
