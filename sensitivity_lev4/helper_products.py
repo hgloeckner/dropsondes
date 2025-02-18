@@ -92,6 +92,25 @@ def iterate_circle(circles, config, int=False, w=None):
     return circles_play
 
 
+def pipeline_like_iter(circles, config, int=False, w=None):
+    circles_play = copy.deepcopy(circles)
+    get_xy = [
+        "get_xy_coords_for_circles",
+        "add_circle_variables_to_ds",
+        "drop_vars",
+        "interpolate_na",
+        "apply_fit2d",
+        "add_divergence",
+        "add_vorticity",
+        "add_omega",
+        "add_circle_variables_to_ds",
+    ]
+    iterate_Circle_method_over_dict_of_Circle_objects(
+        circles_play, get_xy, config=config
+    )
+    return circles_play
+
+
 def remove_one(circles, config, gap_sonde, int=False, w=None):
     try:
         config.add_section("circles.Circle.remove_sonde")
