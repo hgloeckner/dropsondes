@@ -1,16 +1,31 @@
 import copy
 import configparser
-from pydropsonde.pipeline import iterate_Circle_method_over_dict_of_Circle_objects
+from pydropsonde.circles import Circle
+from pydropsonde.pipeline import get_args_for_function
+
+
+def iterate_Circle_method_over_dict_of_Circle_objects(
+    circles: dict, functions: list, config: configparser.ConfigParser
+) -> dict:
+    for function_name in functions:
+        new_dict = {}
+        for key, value in circles.items():
+            function = getattr(Circle, function_name)
+            result = function(value, **get_args_for_function(config, function))
+            if result is not None:
+                new_dict[key] = result
+
+    return new_dict
 
 
 def calc_products(circles, config):
     products = [
         "add_density",
         "apply_fit2d",
-        "remove_invalid",
         "add_divergence",
         "add_vorticity",
         "add_omega",
+        "add_circle_variables_to_ds",
         # "add_wvel",
         # "add_regression_stderr",
     ]
@@ -19,10 +34,7 @@ def calc_products(circles, config):
 
 
 def get_xy_circles(circles, config):
-    get_xy = [
-        "get_xy_coords_for_circles",
-        "broadcast_ds",
-    ]
+    get_xy = ["get_xy_coords_for_circles", "drop_vars"]
     iterate_Circle_method_over_dict_of_Circle_objects(circles, get_xy, config=config)
     return circles
 
