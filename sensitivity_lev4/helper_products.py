@@ -39,34 +39,17 @@ def get_xy_circles(circles, config):
     return circles
 
 
-def interp_na(circles, interpolate, config, w=False, max_gap=1500):
+def interp_na(circles, interpolate, config, max_gap=1500):
     if interpolate:
         try:
             config.add_section("circles.Circle.interpolate_na")
         except configparser.DuplicateSectionError:
             pass
         config.set("circles.Circle.interpolate_na", "max_gap", str(max_gap))
-        if w:
-            print("calculated with weight")
-            try:
-                config.add_section("circles.Circle.add_weights")
-            except configparser.DuplicateSectionError:
-                pass
-            config.set("circles.Circle.interpolate_na", "max_gap", str(15000))
-            path = "/Users/helene/Documents/Orcestra/dropsonde/dropsonde_data/autocorrelation.zarr"
-            config.set("circles.Circle.add_weights", "path", path)
-            config.set("circles.Circle.add_weights", "method", "autocorrelation")
-            get_xy = [
-                "add_distances",
-                "add_weights",
-                "interpolate_na",
-            ]
 
-        else:
-            config.set("circles.Circle.interpolate_na", "max_gap", str(max_gap))
-            get_xy = [
-                "interpolate_na",
-            ]
+        get_xy = [
+            "interpolate_na",
+        ]
         iterate_Circle_method_over_dict_of_Circle_objects(
             circles, get_xy, config=config
         )
@@ -99,7 +82,7 @@ def keep_good(circles, good_circles):
 def iterate_circle(circles, config, int=False, w=None):
     circles_play = copy.deepcopy(circles)
     get_xy_circles(circles_play, config)
-    interp_na(circles=circles_play, interpolate=int, config=config, w=w)
+    interp_na(circles=circles_play, interpolate=int, config=config)
     calc_products(circles_play, config)
     return circles_play
 
@@ -108,7 +91,6 @@ def pipeline_like_iter(circles, config, int=False, w=None):
     circles_play = copy.deepcopy(circles)
     get_xy = [
         "get_xy_coords_for_circles",
-        "add_circle_variables_to_ds",
         "drop_vars",
         "interpolate_na",
         "apply_fit2d",
