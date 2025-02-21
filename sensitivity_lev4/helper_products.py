@@ -42,13 +42,13 @@ def get_xy_circles(circles, config):
 def interp_na(circles, interpolate, config, max_gap=1500):
     if interpolate:
         try:
-            config.add_section("circles.Circle.interpolate_na")
+            config.add_section("circles.Circle.interpolate_na_sondes")
         except configparser.DuplicateSectionError:
             pass
-        config.set("circles.Circle.interpolate_na", "max_gap", str(max_gap))
+        config.set("circles.Circle.interpolate_na_sondes", "max_gap", str(max_gap))
 
         get_xy = [
-            "interpolate_na",
+            "interpolate_na_sondes",
         ]
         iterate_Circle_method_over_dict_of_Circle_objects(
             circles, get_xy, config=config
@@ -92,7 +92,7 @@ def pipeline_like_iter(circles, config, int=False, w=None):
     get_xy = [
         "get_xy_coords_for_circles",
         "drop_vars",
-        "interpolate_na",
+        "interpolate_na_sondes",
         "apply_fit2d",
         "add_divergence",
         "add_vorticity",
