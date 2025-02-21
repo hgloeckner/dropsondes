@@ -30,26 +30,37 @@ gridded.get_circle_times_from_segmentation(
 )
 gridded.alt_dim = "altitude"
 gridded.sonde_dim = "sonde"
+gridded.create_interim_l4()
+gridded.add_autocorrelation(
+    autocorr_dir="../dropsonde_data/", filename="autocorrelation.zarr"
+)
+gridded.add_distances()
+
 # %%
 
-
 circles = pydropsonde.pipeline.create_and_populate_circle_object(gridded, None).circles
-
 good_circles = get_good(circles, thres=12)
-
-
 circles = keep_good(circles, good_circles)
 circles_play = copy.deepcopy(circles)
 
 # %%
 no_int_ref = iterate_circle(circles=circles_play, config=config, int=False)
 int_ref = iterate_circle(circles=circles_play, config=config, int=True)
+# %%
+
+gridded.add_weights()
+circles = pydropsonde.pipeline.create_and_populate_circle_object(gridded, None).circles
+good_circles = get_good(circles, thres=12)
+circles = keep_good(circles, good_circles)
+circles_w = copy.deepcopy(circles)
+weights_ref = iterate_circle(circles=circles_w, config=config, int=True)
 
 
 # %%
 result = {
     "int": {key: [] for key in circles.keys()},
     "no_int": {key: [] for key in circles.keys()},
+    "weight": {key: [] for key in circles.keys()},
 }
 sonde_ids = range(13)
 
@@ -66,9 +77,14 @@ for gap_sonde in sonde_ids:
             circles=circles_play, config=config, gap_sonde=gap_sonde, int=True
         )
         gap_int = calc_products(gap_int, config)
+        gap_w = remove_one(
+            circles=circles_w, config=config, gap_sonde=gap_sonde, int=True
+        )
+        gap_w = calc_products(gap_w, config)
         for key in gap_int.keys():
             result["int"][key].append(gap_int[key].circle_ds)
             result["no_int"][key].append(gap_no_int[key].circle_ds)
+            result["weight"][key].append(gap_no_int[key].circle_ds)
 
 
 # %%
@@ -77,24 +93,35 @@ var = "omega"
 mean_err_c = {
     "int": {key: [] for key in circles.keys()},
     "no_int": {key: [] for key in circles.keys()},
+    "weight": {key: [] for key in circles.keys()},
 }
 for key in circles.keys():
     cint_ref = int_ref[key].circle_ds
     cno_int_ref = no_int_ref[key].circle_ds
-    for ds_int, ds_no_int in zip(result["int"][key], result["no_int"][key]):
+    cweight_ref = weights_ref[key].circle_ds
+    for ds_int, ds_no_int, ds_weight in zip(
+        result["int"][key], result["no_int"][key], result["weight"][key]
+    ):
         mean_err_c["int"][key].append(
             (ds_int[var] - cint_ref[var]).mean("altitude").values
         )
         mean_err_c["no_int"][key].append(
             (ds_no_int[var] - cno_int_ref[var]).mean("altitude").values
         )
+
+        mean_err_c["weight"][key].append(
+            (ds_weight[var] - cweight_ref[var]).mean("altitude").values
+        )
 # %%
+x_name = "weight"
+y_name = "no_int"
+
 colors = sns.color_palette("turbo", 22)
 fig, ax = plt.subplots()
 fig.suptitle("Remove one sonde")
-for idx, key in enumerate(mean_err_c["int"].keys()):
-    print("int", key, np.mean(mean_err_c["int"][key]))
-    print("no_int", key, np.mean(mean_err_c["no_int"][key]))
+for idx, key in enumerate(mean_err_c[x_name].keys()):
+    print("int", key, np.mean(mean_err_c[x_name][key]))
+    print("no_int", key, np.mean(mean_err_c[y_name][key]))
     ax.scatter(
         mean_err_c["int"][key],
         mean_err_c["no_int"][key],
@@ -103,8 +130,8 @@ for idx, key in enumerate(mean_err_c["int"].keys()):
         label=key,
     )
 # ax.legend(loc=1, fontsize="small")
-ax.set_xlabel("interpolated mean error / hPa hr-1")
-ax.set_ylabel("not interpolated mean error / hPa hr-1")
+ax.set_xlabel(f"{x_name} mean error / hPa hr-1")
+ax.set_ylabel(f"{y_name} mean error / hPa hr-1")
 ax.axvline(0, color="gray", alpha=0.5, linestyle="-")
 ax.axhline(0, color="gray", alpha=0.5, linestyle="-")
 x = np.linspace(-4, 4)
@@ -116,13 +143,13 @@ fig.savefig("../images/remove_one_sonde.pdf")
 
 # %%
 
-int_err = np.concat(list(mean_err_c["int"].values()))
-no_int_err = np.concat(list(mean_err_c["no_int"].values()))
+int_err = np.concat(list(mean_err_c[x_name].values()))
+no_int_err = np.concat(list(mean_err_c[y_name].values()))
 
 fig, ax = plt.subplots()
 
-ax.hist(int_err, bins=50, histtype="bar", alpha=0.5, label="int", color="#00267f")
-ax.hist(no_int_err, bins=50, histtype="bar", alpha=0.5, label="no_int", color="#ffc726")
+ax.hist(int_err, bins=50, histtype="bar", alpha=0.5, label=x_name, color="#00267f")
+ax.hist(no_int_err, bins=50, histtype="bar", alpha=0.5, label=y_name, color="#ffc726")
 ax.legend()
 ax.set_xlabel("mean error / hPa hr-1")
 ax.set_ylabel("count")
@@ -136,11 +163,13 @@ var = "omega"
 
 no_int_ds = no_int_ref[key].circle_ds
 int_ds = int_ref[key].circle_ds
+weight_ds = weights_ref[key].circle_ds
 fig, ax = plt.subplots()
 fig.suptitle(key)
-ax.scatter(no_int_ds[var], no_int_ds.altitude, s=10, label="no int", c="#00267f")
+ax.scatter(no_int_ds[var], no_int_ds.altitude, s=10, label="no_int", c="#00267f")
 
 ax.scatter(int_ds[var], int_ds.altitude, s=10, label="int", c="#ffc726")
+ax.scatter(weight_ds[var], weight_ds.altitude, s=10, label="weight", c="#6d88bc")
 
 ax.set_ylabel("gpsalt / m")
 ax.set_xlabel("omega / hPa hr-1")
