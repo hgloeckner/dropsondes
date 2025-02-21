@@ -116,7 +116,7 @@ def remove_one(circles, config, gap_sonde, int=False, w=None):
     iterate_Circle_method_over_dict_of_Circle_objects(
         circles_play, ["remove_sonde"], config=config
     )
-    interp_na(circles=circles_play, interpolate=int, config=config, w=w)
+    interp_na(circles=circles_play, interpolate=int, config=config)
     return circles_play
 
 
