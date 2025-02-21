@@ -7,7 +7,6 @@ import xarray as xr
 from pydropsonde.processor import Gridded
 import pydropsonde
 
-
 from helper_products import iterate_circle
 
 
@@ -79,3 +78,10 @@ circles = pydropsonde.pipeline.create_and_populate_circle_object(gridded, None).
 circles_play = copy.deepcopy(circles)
 
 weights_ref = iterate_circle(circles=circles_play, config=config, int=True)
+# %%
+
+circles = pydropsonde.pipeline.create_and_populate_circle_object(gridded, None).circles
+
+circles_play = copy.deepcopy(circles)
+
+no_int_ref = iterate_circle(circles=circles_play, config=config, int=False)
