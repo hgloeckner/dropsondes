@@ -26,7 +26,8 @@ def calc_products(circles, config):
         "add_vorticity",
         "add_omega",
         "add_circle_variables_to_ds",
-        # "add_wvel",
+        "add_wvel",
+        # "add_regression_stderr",
         # "add_regression_stderr",
     ]
     iterate_Circle_method_over_dict_of_Circle_objects(circles, products, config=config)
@@ -82,7 +83,7 @@ def keep_good(circles, good_circles):
 def iterate_circle(circles, config, int=False, w=None):
     circles_play = copy.deepcopy(circles)
     get_xy_circles(circles_play, config)
-    interp_na(circles=circles_play, interpolate=int, config=config)
+    interp_na(circles=circles_play, interpolate=int, config=config, max_gap=15000)
     calc_products(circles_play, config)
     return circles_play
 
@@ -97,6 +98,7 @@ def pipeline_like_iter(circles, config, int=False, w=None):
         "add_divergence",
         "add_vorticity",
         "add_omega",
+        # "add_regression_stderr",
         "add_circle_variables_to_ds",
     ]
     iterate_Circle_method_over_dict_of_Circle_objects(
@@ -134,7 +136,7 @@ def remove_from_one(gap_alt, gap_depth, gap_sonde, circles, config, int=False, w
         circles_play, ["one_gap_one_sonde"], config=config
     )
 
-    interp_na(circles=circles_play, interpolate=int, config=config, w=w)
+    interp_na(circles=circles_play, interpolate=int, config=config)
     return circles_play
 
 
@@ -149,5 +151,5 @@ def remove_from_all(gap_length, circles, config, int=False, w=None):
     iterate_Circle_method_over_dict_of_Circle_objects(
         circles_play, ["remove_values"], config=config
     )
-    interp_na(circles=circles_play, interpolate=int, config=config, w=w)
+    interp_na(circles=circles_play, interpolate=int, config=config)
     return circles_play
