@@ -49,8 +49,7 @@ gridded.interim_l4_ds = gridded.interim_l4_ds.drop_vars(
     [f"{var}_weights" for var in ["u", "v", "p", "theta", "q", "rh", "ta"]],
     errors="ignore",
 )
-gridded.add_weights(method="no_weights")
-
+# gridded.add_weights(method="no_weights")
 circles = pydropsonde.pipeline.create_and_populate_circle_object(gridded, None).circles
 circles_play = copy.deepcopy(circles)
 
