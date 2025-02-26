@@ -31,19 +31,29 @@ gridded.get_circle_times_from_segmentation(
 )
 gridded.alt_dim = "altitude"
 gridded.sonde_dim = "sonde"
+gridded.create_interim_l4()
+gridded.add_autocorrelation(
+    autocorr_dir="../dropsonde_data/", filename="autocorrelation.zarr"
+)
+gridded.add_distances()
+
 # %%
-# %%
+
 circles = pydropsonde.pipeline.create_and_populate_circle_object(gridded, None).circles
-
 good_circles = get_good(circles, thres=12)
-
-
 circles = keep_good(circles, good_circles)
 circles_play = copy.deepcopy(circles)
 
 # %%
 no_int_ref = iterate_circle(circles=circles_play, config=config, int=False)
-int_ref = iterate_circle(circles=circles_play, config=config, int=True)
+# %%
+
+gridded.add_weights()
+circles = pydropsonde.pipeline.create_and_populate_circle_object(gridded, None).circles
+good_circles = get_good(circles, thres=12)
+circles = keep_good(circles, good_circles)
+circles_w = copy.deepcopy(circles)
+weights_ref = iterate_circle(circles=circles_w, config=config, int=True)
 
 
 # %%
@@ -51,11 +61,11 @@ int_ref = iterate_circle(circles=circles_play, config=config, int=True)
 
 var = "omega"
 
-gap_alts = [500, 1000, 5000]  # , 7000]
-gap_depths = [30, 100, 300]  # , 1000]
+gap_alts = [500]  # , 7000]
+gap_depths = [30, 300, 1500]  # , 1000]
 sonde_ids = np.arange(0, 13)
 result = {
-    "int": {
+    "weight": {
         gap_alt: {
             gap_depth: {key: [] for key in circles.keys()} for gap_depth in gap_depths
         }
@@ -79,18 +89,18 @@ for params in itertools.product(gap_alts, gap_depths, sonde_ids):
         pass
     else:
         gap_no_int = calc_products(gap_no_int, config)
-        gap_int = remove_from_one(
-            gap_alt, gap_depth, gap_sonde, circles_play, config, int=True
+        gap_w = remove_from_one(
+            gap_alt, gap_depth, gap_sonde, circles_w, config, int=True
         )
-        gap_int = calc_products(gap_int, config)
-        for key in gap_int.keys():
-            result["int"][gap_alt][gap_depth][key].append(gap_int[key].circle_ds)
+        gap_w = calc_products(gap_w, config)
+        for key in gap_w.keys():
+            result["weight"][gap_alt][gap_depth][key].append(gap_w[key].circle_ds)
             result["no_int"][gap_alt][gap_depth][key].append(gap_no_int[key].circle_ds)
 
 # %%
 depths = [30, 100, 300]
 alts = [500, 1000, 5000]
-int_type = "int"
+int_type = "weight"
 var = "omega"
 x = np.linspace(-1, 1, 20)
 alt = "altitude"
@@ -105,7 +115,7 @@ for row, (gap_depth, subfig) in enumerate(zip(depths, subfigs)):
     for ax in axes:
         ax.fill_betweenx(x, -x, x, color="lightgray", alpha=0.2)
     for col, gap_alt in enumerate(alts):
-        int_result = result["int"][gap_alt][gap_depth]
+        int_result = result[int_type][gap_alt][gap_depth]
         no_int_result = result["no_int"][gap_alt][gap_depth]
         for idx, key in enumerate(int_result.keys()):
             count = 0
@@ -113,14 +123,14 @@ for row, (gap_depth, subfig) in enumerate(zip(depths, subfigs)):
             for ds_int, ds_no_int in zip(int_result[key], no_int_result[key]):
                 if count == 0 and row == 0 and col == 0:
                     axes[col].scatter(
-                        (ds_int[var] - int_ref[key].circle_ds[var]).mean(alt),
+                        (ds_int[var] - weights_ref[key].circle_ds[var]).mean(alt),
                         (ds_no_int[var] - no_int_ref[key].circle_ds[var]).mean(alt),
                         color=colors[idx],
                         label=key,
                     )
                 else:
                     axes[col].scatter(
-                        (ds_int[var] - int_ref[key].circle_ds[var]).mean(alt),
+                        (ds_int[var] - weights_ref[key].circle_ds[var]).mean(alt),
                         (ds_no_int[var] - no_int_ref[key].circle_ds[var]).mean(alt),
                         color=colors[idx],
                     )
@@ -150,6 +160,66 @@ for ax in subfigs[-1].axes:
 for ax in fig.axes[::3]:
     ax.set_ylabel("omega(gap_no_int - no_int) mean over gpsalt")
 for ax in fig.axes:
+    ax.axvline(0, color="gray", linestyle="--", alpha=0.5)
+    ax.axhline(0, color="gray", linestyle="--", alpha=0.5)
+
+
+sns.despine(offset=10)
+fig.savefig(f"../images/{var}_different_gaps_one_sonde.pdf")
+
+
+# %%
+# %%
+depths = [30, 300, 1500]
+gap_alt = 500
+int_type = "weight"
+var = "omega"
+x = np.linspace(-2.5, 2.5, 20)
+alt = "altitude"
+
+colors = sns.color_palette("turbo", n_colors=22)
+fig, axes = plt.subplots(ncols=3, figsize=(18, 6))
+fig.suptitle("Artificial gaps of different sizes at 500m")
+for ax in axes:
+    ax.fill_betweenx(x, -x, x, color="lightgray", alpha=0.2)
+for col, gap_depth in enumerate(depths):
+    int_result = result[int_type][gap_alt][gap_depth]
+    no_int_result = result["no_int"][gap_alt][gap_depth]
+    for idx, key in enumerate(int_result.keys()):
+        count = 0
+
+        for ds_int, ds_no_int in zip(int_result[key], no_int_result[key]):
+            if count == 0 and col == 0:
+                axes[col].scatter(
+                    (ds_int[var] - weights_ref[key].circle_ds[var]).mean(alt),
+                    (ds_no_int[var] - no_int_ref[key].circle_ds[var]).mean(alt),
+                    color=colors[idx],
+                    label=key,
+                )
+            else:
+                axes[col].scatter(
+                    (ds_int[var] - weights_ref[key].circle_ds[var]).mean(alt),
+                    (ds_no_int[var] - no_int_ref[key].circle_ds[var]).mean(alt),
+                    color=colors[idx],
+                )
+
+            count += 1
+    axes[col].set_title(f"gap altitude: {gap_depth}")
+    axes[col].set_xlabel("omega (gap_weight_int - weight_int) mean over gpsalt")
+# axes[0].legend()
+
+limits = (-0.1, 0.1)
+axes[0].set_xlim(*limits)
+axes[0].set_ylim(*limits)
+limits = (-1.3, 1.3)
+axes[1].set_xlim(*limits)
+axes[1].set_ylim(*limits)
+limits = (-2.2, 2.2)
+axes[2].set_xlim(*limits)
+axes[2].set_ylim(*limits)
+
+axes[2].set_ylabel("omega(gap_no_int - no_int) mean over gpsalt")
+for ax in axes:
     ax.axvline(0, color="gray", linestyle="--", alpha=0.5)
     ax.axhline(0, color="gray", linestyle="--", alpha=0.5)
 
