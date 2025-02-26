@@ -84,7 +84,7 @@ for gap_sonde in sonde_ids:
         for key in gap_int.keys():
             result["int"][key].append(gap_int[key].circle_ds)
             result["no_int"][key].append(gap_no_int[key].circle_ds)
-            result["weight"][key].append(gap_no_int[key].circle_ds)
+            result["weight"][key].append(gap_w[key].circle_ds)
 
 
 # %%
@@ -142,14 +142,36 @@ fig.savefig("../images/remove_one_sonde.pdf")
 
 
 # %%
-
+x_name = "weight"
+y_name = "no_int"
 int_err = np.concat(list(mean_err_c[x_name].values()))
 no_int_err = np.concat(list(mean_err_c[y_name].values()))
 
+nbins = 75
+bin_range = (-4, 4)
+
+
 fig, ax = plt.subplots()
 
-ax.hist(int_err, bins=50, histtype="bar", alpha=0.5, label=x_name, color="#00267f")
-ax.hist(no_int_err, bins=50, histtype="bar", alpha=0.5, label=y_name, color="#ffc726")
+ax.hist(
+    int_err,
+    bins=nbins,
+    histtype="bar",
+    alpha=0.5,
+    range=bin_range,
+    label=x_name,
+    color="#00267f",
+)
+ax.hist(
+    no_int_err,
+    bins=nbins,
+    histtype="bar",
+    alpha=0.5,
+    label=y_name,
+    range=bin_range,
+    color="#ffc726",
+)
+
 ax.legend()
 ax.set_xlabel("mean error / hPa hr-1")
 ax.set_ylabel("count")
