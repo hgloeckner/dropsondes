@@ -27,6 +27,7 @@ plt.style.use("./beach.mplstyle")
 constrained_alt = np.where(np.abs(values) < 100, values, np.nan)
 constrained_p = np.where(np.array(pvalues) > 100500, pvalues, np.nan)
 constrained_p[constrained_p > 102000] = np.nan
+
 fig, ax1 = plt.subplots(figsize=(6, 6))
 
 
@@ -69,4 +70,3 @@ ax2.set_xlabel("last pressure value / Pa")
 sns.despine(offset={"left": 10})
 fig.tight_layout()
 fig.savefig("../images/surface_hist.pdf")
-# %%
