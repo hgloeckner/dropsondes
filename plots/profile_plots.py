@@ -3,7 +3,7 @@
 import xarray as xr
 import seaborn as sns
 import matplotlib.pyplot as plt
-
+from matplotlib.lines import Line2D
 
 lev3 = xr.open_dataset(
     "/Users/helene/Documents/Data/Dropsonde/dropsonde_data/products/Level_3_qc/PERCUSION_Level_3.zarr"
@@ -17,7 +17,7 @@ bb = lev3.where(lev3.aircraft_longitude < -40, drop=True)
 
 csal = "#960018"
 cbb = "#0085db"
-variables = ["theta", "q", "u", "v"]
+variables = ["theta", "rh", "u", "v"]
 
 
 fig, axes = plt.subplots(ncols=len(variables), figsize=(6 * len(variables), 6))
@@ -40,6 +40,10 @@ sns.despine(offset=10)
 
 for ax in axes:
     ax.set_ylim(0, None)
+sns.despine(offset={"left": 10})
+line = Line2D([0], [0], label="Sal", alpha=0.5, color=csal)
+line1 = Line2D([0], [0], label="Barbados", alpha=0.5, color=cbb)
+axes[0].legend(handles=[line, line1])
 fig.tight_layout()
 fig.savefig("../images/profile_overview.png")
 
