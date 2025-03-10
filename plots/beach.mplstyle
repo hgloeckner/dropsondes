@@ -7,5 +7,7 @@ xtick.labelsize : 12
 ytick.labelsize : 12
 xtick.major.width : 1.5
 ytick.major.width : 1.5
+axes.spines.right : False
+axes.spines.top : False
 
 axes.prop_cycle : cycler("color", ["#00267f","#ffc726", "#6d88bc", "#d3ddef" ])
