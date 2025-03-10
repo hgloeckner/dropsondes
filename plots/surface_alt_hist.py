@@ -7,14 +7,14 @@ import matplotlib.pyplot as plt
 
 
 lev3 = xr.open_dataset(
-    "/Users/helene/Documents/Data/Dropsonde/dropsonde_data/products/Level_3_qc/PERCUSION_Level_3.zarr"
+    "/Users/helene/Documents/Data/Dropsonde/dropsondes/products/Level_3_qc/PERCUSION_Level_3.zarr"
 )
 
 values = []
 pvalues = []
 for idx, sonde in enumerate(lev3.sonde_id.values):
     fid = lev3.where(lev3.sonde_id == sonde, drop=True).flight_id.values[0]
-    path = f"/Users/helene/Documents/Data/Dropsonde/dropsonde_data/products/Level_2/{fid}/PERCUSION_{sonde}_Level_2.zarr"
+    path = f"/Users/helene/Documents/Data/Dropsonde/dropsondes/products/Level_2/{fid}/PERCUSION_{sonde}_Level_2.zarr"
     l2_ds = (
         xr.open_dataset(path, engine="zarr")
         .sortby("time", ascending=False)
@@ -23,7 +23,7 @@ for idx, sonde in enumerate(lev3.sonde_id.values):
     values.append(l2_ds.gpsalt.values[0])
     pvalues.append(l2_ds.p.values[0])
 # %%
-
+plt.style.use("./beach.mplstyle")
 constrained_alt = np.where(np.abs(values) < 100, values, np.nan)
 constrained_p = np.where(np.array(pvalues) > 100500, pvalues, np.nan)
 constrained_p[constrained_p > 102000] = np.nan
@@ -57,6 +57,7 @@ for ax, c in zip([ax1, ax2], ["#00267f", "#ffc726"]):
 
     ax.xaxis.label.set_color(c)
     ax.tick_params(axis="x", colors=c)
+ax2.spines["bottom"].set_color("#00267f")
 
 # ax.axvline(0, c="gray")
 ax1.set_xlim(-50, 50)
@@ -65,7 +66,7 @@ ax1.set_xlabel("last gpsalt value / m")
 ax2.set_xlabel("last pressure value / Pa")
 # axes[1].set_ylabel("")
 
-sns.despine(offset=10)
+sns.despine(offset={"left": 10})
 fig.tight_layout()
 fig.savefig("../images/surface_hist.pdf")
 # %%
