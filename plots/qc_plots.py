@@ -10,6 +10,11 @@ root = "ipfs://QmQgxdRzcsGsf2Whp5A4fa5x7vYHYHNwjUEgPJdzzTgz5U"
 ds = xr.open_dataset(
     f"{root}/products/HALO/dropsondes/Level_3_qc/PERCUSION_Level_3.zarr", engine="zarr"
 )
+
+# %%
+ds = xr.open_dataset(
+    "/Users/helene/Documents/Data/Dropsonde/dropsonde_data/products/Level_3_qc/PERCUSION_Level_3.zarr"
+)
 # %%
 colors = ["#a3b4d8", "#00267f", "#ffc726"]
 
@@ -50,6 +55,7 @@ for var, color in zip(variables, colors):
         bins=100,
         stat="probability",
         alpha=0.5,
+        binrange=(0, 15000),
         label=var,
         color=color,
         # kde=True,
