@@ -27,7 +27,7 @@ for idx, sonde in enumerate(lev3.sonde_id.values):
 constrained_alt = np.where(np.abs(values) < 100, values, np.nan)
 constrained_p = np.where(np.array(pvalues) > 100500, pvalues, np.nan)
 constrained_p[constrained_p > 102000] = np.nan
-fig, axes = plt.subplots(ncols=2, figsize=(12, 6))
+fig, ax1 = plt.subplots(figsize=(6, 6))
 
 
 sns.histplot(
@@ -38,8 +38,9 @@ sns.histplot(
     color="#00267f",
     kde=True,
     element="step",
-    ax=axes[0],
+    ax=ax1,
 )
+ax2 = ax1.twiny()
 
 sns.histplot(
     constrained_p,
@@ -49,15 +50,20 @@ sns.histplot(
     color="#ffc726",
     kde=True,
     element="step",
-    ax=axes[1],
+    ax=ax2,
 )
+for ax, c in zip([ax1, ax2], ["#00267f", "#ffc726"]):
+    ax.set_title("")
 
+    ax.xaxis.label.set_color(c)
+    ax.tick_params(axis="x", colors=c)
 
-axes[0].axvline(0, c="gray")
-axes[0].set_xlim(-50, 50)
-axes[0].set_xlabel("last gpsalt value / m")
-axes[1].set_xlabel("last pressure value / Pa")
-axes[1].set_ylabel("")
+# ax.axvline(0, c="gray")
+ax1.set_xlim(-50, 50)
+ax2.set_xlim(100470, 101470)
+ax1.set_xlabel("last gpsalt value / m")
+ax2.set_xlabel("last pressure value / Pa")
+# axes[1].set_ylabel("")
 
 sns.despine(offset=10)
 fig.tight_layout()
