@@ -62,7 +62,7 @@ weights_ref = iterate_circle(circles=circles_w, config=config, int=True)
 var = "omega"
 
 gap_alts = [500]  # , 7000]
-gap_depths = [30, 300, 1500]  # , 1000]
+gap_depths = [300]  # 30, 1500, 1000]
 sonde_ids = np.arange(0, 13)
 result = {
     "weight": {
@@ -96,6 +96,22 @@ for params in itertools.product(gap_alts, gap_depths, sonde_ids):
         for key in gap_w.keys():
             result["weight"][gap_alt][gap_depth][key].append(gap_w[key].circle_ds)
             result["no_int"][gap_alt][gap_depth][key].append(gap_no_int[key].circle_ds)
+
+
+# %%
+sns.set_palette("Paired")
+key = "HALO-20240829a_d387"
+ref = weights_ref[key].circle_ds
+for weight in result["weight"][500][300][key]:
+    for sonde in weight.sonde:
+        weight.sel(sonde=sonde).u.plot(y="altitude")
+
+        ref.sel(sonde=sonde).u.plot(y="altitude")
+
+plt.ylim(0, 200)
+
+plt.xlim(-6, 5)
+
 
 # %%
 depths = [30, 100, 300]
