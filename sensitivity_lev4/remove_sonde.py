@@ -24,7 +24,9 @@ l3_ds = xr.open_dataset(
 ).rename({"interp_time": "bin_average_time"})
 
 gridded = Gridded(sondes={}, global_attrs={})
-gridded.set_l3_ds(l3_ds.where((l3_ds["u_qc"] == 0) & (l3_ds["p_qc"] == 0), drop=True))
+gridded.set_l3_ds(
+    l3_ds
+)  # .where((l3_ds["u_qc"] == 0) & (l3_ds["p_qc"] == 0), drop=True))
 gridded.get_circle_times_from_segmentation(
     "https://orcestra-campaign.github.io/flight_segmentation/all_flights.yaml"
 )
