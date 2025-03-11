@@ -3,7 +3,6 @@
 import xarray as xr
 import seaborn as sns
 import matplotlib.pyplot as plt
-from matplotlib.lines import Line2D
 import numpy as np
 
 lev3 = xr.open_dataset(
@@ -35,7 +34,9 @@ rhfreeze_bb = bb["rh"].isel(altitude=sal_freeze).mean("sonde")
 
 plt.style.use("./beach.mplstyle")
 csal = "#960018"
+csal_mean = "#c1121f"
 cbb = "#0085db"
+cbb_mean = "#00b4d8"
 variables = ["theta", "rh", "u", "v"]
 units = ["K", "%", "m s-1", "m s-1"]
 
@@ -56,10 +57,10 @@ for j, var in enumerate(variables):
         bb.sel(sonde=sonde)[var].plot(ax=ax, color=cbb, alpha=0.05, y="altitude")
 
     sal[var].mean("sonde").sel(altitude=slice(0, 13500)).plot(
-        ax=ax, color=csal, y="altitude", linewidth=5
+        ax=ax, color=csal_mean, y="altitude", linewidth=5, label="East Atlantic"
     )
     bb[var].mean("sonde").sel(altitude=slice(0, 13500)).plot(
-        ax=ax, color=cbb, y="altitude", linewidth=5
+        ax=ax, color=cbb_mean, y="altitude", linewidth=5, label="West Atlantic"
     )
     ax.set_xlabel(f"{var} / {units[j]}")
 
@@ -73,6 +74,9 @@ axes[0].set_yticks(
 xticks = list((axes[1].get_xticks()).astype(int))
 xticks.remove(np.float64(60))
 axes[1].set_xticks(xticks + [int(rhfreeze_sal), int(rhfreeze_bb)])
+axes[0].set_yticks(
+    axes[0].get_yticks(), labels=[int(label) for label in axes[0].get_yticks()]
+)
 
 for ax in axes.flatten():
     ax.set_ylim(0, 15000)
@@ -95,9 +99,7 @@ axes[3].axhline(
 # for ax in axes[0]:
 axes[0].set_ylabel("altitude / m")
 sns.despine(offset={"left": 10})
-line = Line2D([0], [0], label="East Atlantic", alpha=0.5, color=csal)
-line1 = Line2D([0], [0], label="West Atlantic", alpha=0.5, color=cbb)
-axes[0].legend(handles=[line, line1])
+axes[0].legend()
 fig.tight_layout()
 fig.savefig("../images/profile_overview.png")
 
