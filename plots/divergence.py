@@ -1,11 +1,8 @@
 # %%
 import matplotlib.pyplot as plt
 import xarray as xr
-import sys
 import numpy as np
-
-sys.path.append("./")
-sys.path.append("../")
+import eurec4a
 
 
 # %%
@@ -23,18 +20,16 @@ def get_nb_circles_per_flight(ds):
 # %%
 circle_flights = get_nb_circles_per_flight(ds_lev4)
 
-# %%
-
 
 plt.style.use("./beach.mplstyle")
 fig, ax = plt.subplots(figsize=(24, 6))
-im = ds_lev4.div.plot(
+im = (ds_lev4.div).plot(
     cmap="coolwarm",
     ax=ax,
     y="altitude",
     center=0,
-    vmin=-4e-5,
-    vmax=4e-5,
+    vmin=-3e-5,
+    vmax=3e-5,
     add_colorbar=False,
 )
 fig.subplots_adjust(right=0.93)
@@ -44,7 +39,7 @@ nb_circ = 0
 xpos = [-0.5]
 for flight in np.unique(circle_flights):
     nb_circ += list(circle_flights).count(flight)
-    ax.axvline(nb_circ - 0.5, color="black")
+    # ax.axvline(nb_circ - 0.5, color="black")
     xpos.append(nb_circ - 0.5)
 
 xtickpos = [(xpos[i] + xpos[i + 1]) / 2 for i in range(len(xpos) - 1)]
@@ -66,5 +61,65 @@ ax.set_ylabel("Altitude / m")
 ax1 = ax.twiny()
 ax1.set_xticks([xtickpos[11]], labels=["Transfer 20240906"])
 ax1.set_xlim(ax.get_xlim())
+# ax.set_ylim(0, 2500)
 
 fig.savefig("../images/divergence.png", transparent=True, bbox_inches="tight")
+
+# %%
+# %% div lowest 2500 m
+circle_flights = get_nb_circles_per_flight(ds_lev4)
+
+
+plt.style.use("./beach.mplstyle")
+fig, ax = plt.subplots(figsize=(24, 6))
+im = (
+    (ds_lev4.div)
+    .sel(circle=slice(None, 43))
+    .plot(
+        cmap="coolwarm",
+        ax=ax,
+        y="altitude",
+        center=0,
+        vmin=-3e-5,
+        vmax=3e-5,
+        add_colorbar=False,
+    )
+)
+fig.subplots_adjust(right=0.93)
+cax = fig.add_axes([0.95, 0.15, 0.01, 0.7])
+fig.colorbar(im, cax=cax, label="divergence / s-1", extend="both")
+nb_circ = 0
+ax.set_xlabel("")
+ax.set_ylabel("Altitude / m")
+
+ax.set_ylim(0, 2500)
+
+fig.savefig("../images/divergence_east_low.png", bbox_inches="tight")
+# %%
+# %% div to mean lowest 2500 m
+circle_flights = get_nb_circles_per_flight(ds_lev4)
+
+cat = eurec4a.get_intake_catalog()
+joanne = cat.dropsondes.JOANNE.level4.to_dask()
+
+
+plt.style.use("./beach.mplstyle")
+fig, ax = plt.subplots(figsize=(24, 6))
+im = (joanne.D).plot(
+    cmap="coolwarm",
+    ax=ax,
+    y="alt",
+    center=0,
+    vmin=-3e-5,
+    vmax=3e-5,
+    add_colorbar=False,
+)
+fig.subplots_adjust(right=0.93)
+cax = fig.add_axes([0.95, 0.15, 0.01, 0.7])
+fig.colorbar(im, cax=cax, label="divergence / s-1", extend="both")
+ax.set_xlabel("")
+ax.set_ylabel("Altitude / m")
+
+ax.set_ylim(0, 2500)
+
+fig.savefig("../images/divergence_joanne_low.png", bbox_inches="tight")
