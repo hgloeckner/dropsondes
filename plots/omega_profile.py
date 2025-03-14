@@ -8,7 +8,6 @@ import seaborn as sns
 folder = "dropsondes"
 
 l4_path = f"/Users/helene/Documents/Data/Dropsonde/{folder}/products/Level_4/"
-
 ds_lev4 = xr.open_dataset(
     os.path.join(l4_path, "PERCUSION_Level_4.zarr"), engine="zarr"
 )
@@ -69,18 +68,14 @@ ds_omega_day = ds_omega * 24
 integrated_omega = ds_omega_day.mean("altitude")
 
 
-top_heavy_neg = ds_omega_day.where(
-    ds_omega_day.sel(altitude=slice(5000, 10000)).min() < -40
-)
 # %%
 
-ds_plt = ds_omega_day
 unit = "hPa day-1"
 
 
 fig, axes = plt.subplots(ncols=2, figsize=(12, 6), sharex=True)
 
-ds_plt = ds_plt.where(integrated_omega < 0, drop=True)
+ds_plt = ds_omega_day.where(integrated_omega < 0, drop=True)
 bottom_heavy = ds_plt.where(
     ds_plt.sel(altitude=slice(5000, 10000)).min(dim="altitude")
     - ds_plt.sel(altitude=slice(0, 2500)).min(dim="altitude")
@@ -101,11 +96,11 @@ sim = ds_plt.where(
 
 ax = axes[0]
 
-im = (
-    ds_plt.where(integrated_omega < 0)
-    .mean("circle")
-    .plot(y="altitude", ax=ax, label="mean omega < 0", color="C1")
-)
+im = ds_plt.mean("circle").plot(y="altitude", ax=ax, label="mean omega < 0", color="C1")
+for i in ds_plt.circle:
+    ds_plt.sel(circle=i).plot(y="altitude", ax=ax, color="C1", alpha=0.1)
+
+
 im = top_heavy.mean("circle").plot(
     y="altitude",
     ax=ax,
@@ -158,6 +153,7 @@ for ax in axes:
     ax.set_xlabel(f"omega / {unit}")
     ax.set_ylabel("")
     ax.set_ylim(0, 13500)
+    ax.set_xlim(-350, 150)
 sns.despine(offset={"left": 10})
 
 axes[0].set_ylabel("altitude / m ")
@@ -172,10 +168,12 @@ print(top_heavy.sel(altitude=5000).count().values)
 print(bottom_heavy.sel(altitude=5000).count().values)
 print(sim.sel(altitude=5000).count().values)
 # %%
-im = ds_plt.mean("circle").plot(y="altitude", ax=ax, label="all mean", color="C0")
+fig, axes = plt.subplots(ncols=2, figsize=(12, 6), sharex=True)
 
-im = (
-    ds_plt.where(integrated_omega > 0)
-    .mean("circle")
-    .plot(y="altitude", ax=ax, label="mean omega > 0", color="C2")
-)
+ds_plt = ds_omega_day.where(integrated_omega > 0, drop=True)
+ax = axes[0]
+for i in ds_plt.circle:
+    ds_plt.sel(circle=i).plot(y="altitude", ax=ax, color="C1", alpha=0.1)
+
+im = ds_plt.mean("circle").plot(y="altitude", ax=ax, label="mean omega > 0", color="C1")
+ax.set_xlim(-150, 350)
