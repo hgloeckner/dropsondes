@@ -8,9 +8,10 @@ import numpy as np
 
 # %%
 
-root = "ipns://latest.orcestra-campaign.org/"
-root = "/Users/helene/Documents/Data/Dropsonde/dropsondes"
-ds = xr.open_dataset(f"{root}/products/Level_3/PERCUSION_Level_3.zarr", engine="zarr")
+root = "ipfs://QmYfaiyryTLJYuju27cys7FXenBpEdh3FWV47Sa49BCHs5"
+ds = xr.open_dataset(
+    f"{root}/products/HALO/dropsondes/Level_3/PERCUSION_Level_3.zarr", engine="zarr"
+)
 # %% wind direction
 
 ds_sfc = ds.sel(altitude=slice(0, 50)).mean("altitude")
@@ -41,6 +42,7 @@ ax1.pcolormesh(azimuths * np.pi / 180.0, zeniths, values, cmap=cmap)
 ax1.set_yticklabels("")
 ax1.set_theta_zero_location("N")
 ax1.set_theta_direction(-1)
+ax1.set_xticks(np.deg2rad([0, 45, 90, 135, 180, 225, 270, 315]))
 ax1.set_xticklabels(["N", "", "E", "", "S", "", "W", ""])
 ax1.tick_params(axis="x", which="major", pad=-1)
 ax1.grid(False)
