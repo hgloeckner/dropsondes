@@ -3,7 +3,6 @@ import xarray as xr
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 import cartopy
-
 import numpy as np
 
 
@@ -11,9 +10,7 @@ import numpy as np
 
 root = "ipns://latest.orcestra-campaign.org/"
 root = "/Users/helene/Documents/Data/Dropsonde/dropsondes"
-ds = xr.open_dataset(
-    f"{root}/products/Level_3_qc/PERCUSION_Level_3.zarr", engine="zarr"
-)
+ds = xr.open_dataset(f"{root}/products/Level_3/PERCUSION_Level_3.zarr", engine="zarr")
 # %% wind direction
 
 ds_sfc = ds.sel(altitude=slice(0, 50)).mean("altitude")
@@ -56,7 +53,7 @@ ds_iwv = ds.iwv
 
 plt.style.use("./beach.mplstyle")
 lon_min, lon_max, lat_min, lat_max = -65, -15, 0, 23
-cmap = "cmo.tarn"
+cmap = "BrBG"  # "cmo.tarn"
 
 fig, ax = plt.subplots(
     figsize=(10.5, 6), subplot_kw=dict(projection=ccrs.PlateCarree())
@@ -74,12 +71,12 @@ p = ax.scatter(
     ds_iwv.aircraft_latitude.values,
     c=ds_iwv,
     cmap=cmap,
-    vmin=35,
-    vmax=61,
+    vmin=25,
+    vmax=71,
 )
 
 cax = fig.add_axes((0.92, 0.15, 0.02, 0.3))
-cb = fig.colorbar(p, cax=cax, ticks=[40, 48, 55, 60], extend="max")
+cb = fig.colorbar(p, cax=cax, ticks=[30, 48, 55, 70], extend="max")
 
 
 fig.tight_layout()
