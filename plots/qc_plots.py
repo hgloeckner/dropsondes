@@ -6,14 +6,9 @@ import numpy as np
 
 # %%
 
-root = "ipfs://QmQgxdRzcsGsf2Whp5A4fa5x7vYHYHNwjUEgPJdzzTgz5U"
+root = "ipfs://QmYfaiyryTLJYuju27cys7FXenBpEdh3FWV47Sa49BCHs5"
 ds = xr.open_dataset(
-    f"{root}/products/HALO/dropsondes/Level_3_qc/PERCUSION_Level_3.zarr", engine="zarr"
-)
-
-# %%
-ds = xr.open_dataset(
-    "/Users/helene/Documents/Data/Dropsonde/dropsonde_data/products/Level_3_qc/PERCUSION_Level_3.zarr"
+    f"{root}/products/HALO/dropsondes/Level_3/PERCUSION_Level_3_qc.zarr", engine="zarr"
 )
 # %%
 colors = ["#a3b4d8", "#00267f", "#ffc726"]
@@ -63,7 +58,8 @@ for var, color in zip(variables, colors):
         element="step",
         ax=axes[2],
     )
-
+for ax in axes:
+    ax.set_xlim(0, None)
 
 ax = axes[0]
 ax.set_xlabel("Profile Sparsity Fraction")
