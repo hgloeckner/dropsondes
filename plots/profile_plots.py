@@ -5,8 +5,9 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
 
+root = "ipfs://QmYfaiyryTLJYuju27cys7FXenBpEdh3FWV47Sa49BCHs5"
 lev3 = xr.open_dataset(
-    "/Users/helene/Documents/Data/Dropsonde/dropsonde_data/products/Level_3_qc/PERCUSION_Level_3.zarr"
+    f"{root}/products/HALO/dropsondes/Level_3/PERCUSION_Level_3.zarr", engine="zarr"
 )
 # %%
 
@@ -102,5 +103,108 @@ sns.despine(offset={"left": 10})
 axes[0].legend()
 fig.tight_layout()
 fig.savefig("../images/profile_overview.png")
+
+# %%
+
+
+plt.style.use("./beach.mplstyle")
+csal = "#960018"
+csal_mean = "#c1121f"
+cbb = "#0085db"
+cbb_mean = "#00b4d8"
+variables = ["ta", "q"]  # , "u", "v"]
+units = ["K", "1", "m s-1", "m s-1"]
+
+
+fig, axes = plt.subplots(ncols=2, figsize=(12, 6), sharey=True)
+
+for j, var in enumerate(variables):
+    col = j % 2
+    row = j // 2
+    ax = axes[j]  # axes[row, col]
+    for i in range(max([sal.sonde.size, bb.sonde.size])):
+        sonde = max([sal.sonde.size, bb.sonde.size]) - i - 1
+
+        try:
+            sal.sel(sonde=sonde)[var].plot(ax=ax, color=csal, alpha=0.05, y="altitude")
+        except IndexError:
+            pass
+        bb.sel(sonde=sonde)[var].plot(ax=ax, color=cbb, alpha=0.05, y="altitude")
+
+    sal[var].mean("sonde").sel(altitude=slice(0, 13500)).plot(
+        ax=ax, color=csal_mean, y="altitude", linewidth=5, label="East Atlantic"
+    )
+    bb[var].mean("sonde").sel(altitude=slice(0, 13500)).plot(
+        ax=ax, color=cbb_mean, y="altitude", linewidth=5, label="West Atlantic"
+    )
+    ax.set_xlabel(f"{var} / {units[j]}")
+
+sns.despine(offset=10)
+axes[0].set_yticks(
+    list(axes[0].get_yticks())
+    + [(sal_freeze + bb_freeze) / 2 * 10, (rhmax_sal + rhmax_bb) / 2 * 10],
+    labels=list(axes[0].get_yticks())
+    + ["273.15 K", (rhmax_sal + rhmax_bb).values / 2 * 10],
+)
+
+axes[0].set_yticks(
+    axes[0].get_yticks(), labels=[int(label) for label in axes[0].get_yticks()]
+)
+axes[0].set_xlabel(r"$T$ / K")
+axes[1].set_xlabel(r"$q$ / kg kg-1")
+
+for ax in axes.flatten():
+    ax.set_ylim(0, 15000)
+    ax.set_ylabel("")
+for ax in axes[:2]:
+    ax.axhline(
+        (sal_freeze + bb_freeze) / 2 * 10, color="grey", alpha=0.5, linestyle="--"
+    )
+
+
+# for ax in axes[0]:
+axes[0].set_ylabel("altitude / m")
+sns.despine(offset={"left": 10})
+axes[0].legend()
+fig.tight_layout()
+fig.savefig("../images/profile_ta_q.png")
+
+# %%
+var = "q"
+unit = "%"  # "kg kg-1"
+
+fig, axes = plt.subplots(figsize=(12, 6), ncols=2, sharex=True, sharey=True)
+vmax = 200
+alpha = 1
+
+p = sns.histplot(
+    sal[var].to_dataframe(),
+    x=var,
+    y="altitude",
+    cmap="Reds",
+    alpha=alpha,
+    cbar=True,
+    vmax=vmax,
+    ax=axes[0],
+)
+sns.histplot(
+    bb[var].to_dataframe(),
+    x=var,
+    y="altitude",
+    cmap="Blues",
+    alpha=alpha,
+    cbar=True,
+    vmax=vmax,
+    ax=axes[1],
+)
+# sns.despine(offset={"left":10})
+
+axes[1].set_ylabel("")
+# axes[1].set_yticklabels("")
+axes[0].set_title("Eastern Atlantic")
+axes[1].set_title("Western Atlantic")
+
+for ax in axes:
+    ax.set_xlabel(f"{var} / {unit}")
 
 # %%
