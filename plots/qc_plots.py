@@ -9,7 +9,7 @@ import settings
 ds = xr.open_dataset(
     f"{settings.root}/products/HALO/dropsondes/Level_3/PERCUSION_Level_3_qc.zarr",
     engine="zarr",
-)
+).load()
 
 # %%
 
@@ -33,6 +33,7 @@ for var, color in zip(variables, colors):
         kde=True,
         element="step",
         ax=axes[0],
+        label=var,
         color=color,
     )
     sns.histplot(
@@ -55,22 +56,23 @@ for var, color in zip(variables, colors):
     )
 
 ax = axes[0]
-ax.set_xlabel("Profile Sparsity Fraction")
-ax.set_ylabel("")
+ax.set_xlabel("Fraction of Missing Values")
+ax.set_ylabel("Normalized Number of Sondes")
 ax.set_xlim(0, 0.5)
 ax.legend()
 ax.axvline(0.2, color="gray", alpha=0.5)
 ax = axes[1]
 ax.set_ylabel("")
-ax.set_xlabel("# Near-Surface Measurements")
+ax.set_xlabel("# Measurements in the lowest 1000m")
 ax.axvline(50, color="gray", alpha=0.5)
-ax.legend()
 ax = axes[2]
 ax.set_ylabel("")
 ax.set_xlabel("Profile Extent / m")
-ax.legend()
 ax.axvline(8000, color="gray", alpha=0.5)
 ax.set_xlim(0, 15500)
+fig.tight_layout()
 fig.savefig(
-    "../images/qc_distribution.png",
+    "../images/qc_distribution.pdf",
 )
+
+# %%
