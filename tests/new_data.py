@@ -7,7 +7,7 @@ import numpy as np
 # %%
 
 old_cid = "latest.orcestra-campaign.org"
-new_cid = "QmZt5FcurLvWTxUkHydRX7qNjbNPdc6gVBAbYYTCnkGeDj"
+new_cid = "QmNywDWEPwZhrKzibE2Wgn8RU16VDgxakPtFFqzFAxMUPn"
 old_l3 = xr.open_dataset(
     f"ipns://{old_cid}/products/HALO/dropsondes/Level_3/PERCUSION_Level_3.zarr",
     engine="zarr",
