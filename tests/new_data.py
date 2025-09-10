@@ -53,6 +53,9 @@ for sonde in new_l4.sonde_id.values:
         )
         > 0
     )
+# %%
+
+assert ~np.any(np.isnan(new_l3.launch_lat))
 # %% check that l4 is interpolated and l3 is not
 fig, ax = plt.subplots()
 new_l3.ta.sel(altitude=slice(0, 1000)).plot()
@@ -64,6 +67,68 @@ fig, ax = plt.subplots()
 new_l3.ta.sel(altitude=slice(13000, None)).plot()
 plt.show()
 new_l4.ta.sel(altitude=slice(13000, None)).plot()
+# %%
+fig, ax = plt.subplots()
+old_l4.p.plot()
+
+plt.show()
+new_l4.p.plot()
+
+# %%
+# %%
+l2 = xr.open_dataset(
+    "~/Documents/Data/Dropsonde/dropsonde_data/products/Level_2/HALO-20240811a/PERCUSION_c723db9f_Level_2.zarr",
+    engine="zarr",
+)
+old_l4.sel(sonde=1).rh.plot(label="old l4")
+new_l4.sel(sonde=1).rh.plot(label="new l4")
+sid = new_l4.sel(sonde=1).sonde_id.values
+new_l3.where(new_l3.sonde_id == sid, drop=True).rh.plot(label="new l3")
+old_l3.where(old_l3.sonde_id == sid, drop=True).rh.plot(label="old l3")
+plt.plot(l2.gpsalt, l2.rh, marker="P", markersize=2, color="k")
+
+plt.legend()
+# %%
+
+# %%
+fig, ax = plt.subplots()
+ax.plot(
+    old_l4.sel(sonde=1).rh,
+    old_l4.sel(sonde=1).p,
+    label="old l4",
+    color="C0",
+    linestyle="",
+    markersize=2,
+)
+ax.plot(
+    new_l4.sel(sonde=1).rh,
+    new_l4.sel(sonde=1).p,
+    label="new l4",
+    color="C1",
+    linestyle="",
+    markersize=2,
+)
+ax.plot(
+    new_l3.where(new_l3.sonde_id == sid, drop=True).rh,
+    new_l3.where(new_l3.sonde_id == sid, drop=True).p,
+    label="new l3",
+    color="C1",
+    linestyle="",
+    marker="x",
+    markersize=1,
+)
+ax.plot(
+    old_l3.where(old_l3.sonde_id == sid, drop=True).rh,
+    old_l3.where(old_l3.sonde_id == sid, drop=True).p,
+    label="old l3",
+    marker="x",
+    color="C0",
+    linestyle="",
+    markersize=1,
+)
+ax.plot(l2.rh, l2.p, label="l2", marker="P", markersize=1, color="C2")
+# ax.legend()
+ax.invert_yaxis()
 # %%
 fig, ax = plt.subplots()
 new_l4.omega.mean(dim="circle").plot(
