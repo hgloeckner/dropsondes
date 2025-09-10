@@ -17,10 +17,14 @@ old_l4 = xr.open_dataset(
     engine="zarr",
 )
 new_l3 = xr.open_dataset(
-    f"ipfs://{new_cid}/Level_3/PERCUSION_Level_3.zarr", engine="zarr"
+    "~/Documents/Data/Dropsonde/dropsonde_data/products/Level_3/PERCUSION_Level_3.zarr",
+    # f"ipfs://{new_cid}/products/HALO/dropsondes/Level_3/PERCUSION_Level_3.zarr",
+    engine="zarr",
 )
 new_l4 = xr.open_dataset(
-    f"ipfs://{new_cid}/Level_4/PERCUSION_Level_4.zarr", engine="zarr"
+    # f"ipfs://{new_cid}/products/HALO/dropsondes/Level_4/PERCUSION_Level_4.zarr",
+    "~/Documents/Data/Dropsonde/dropsonde_data/products/Level_4/PERCUSION_Level_4.zarr",
+    engine="zarr",
 )
 
 # %% plot iwv histograms to check if they are plausible/similar
