@@ -30,9 +30,9 @@ new_l4 = xr.open_dataset(
 # %% plot iwv histograms to check if they are plausible/similar
 fig, ax = plt.subplots()
 
-sns.histplot(new_l3.iwv, ax=ax, bins=30, label="new")
-sns.histplot(old_l3.iwv, ax=ax, bins=30, label="old")
-
+sns.histplot(new_l3.iwv, ax=ax, bins=30, binrange=(25, 85), label="new")
+sns.histplot(old_l3.iwv, ax=ax, bins=30, binrange=(25, 85), label="old")
+ax.legend()
 # %% check that l4 and l3 are identical wherever l4 is not interpolated
 for sonde in new_l4.sonde_id.values:
     assert not np.any(
