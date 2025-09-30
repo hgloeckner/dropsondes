@@ -72,3 +72,41 @@ def sel_sub_domain(
     points = np.column_stack([ds[lon_var].values, ds[lat_var].values])
     inside = Path(polygon).contains_points(points)
     return ds.sel(**{item_var: inside})
+
+
+def get_circle_id_for_sondes(ds):
+    return ds.assign(
+        circle_id_sonde=(
+            ("sonde"),
+            np.concat(
+                [
+                    np.repeat(
+                        ds.sel(circle=circle).circle_id.values,
+                        ds.sel(circle=circle).sondes_per_circle.values,
+                    )
+                    for circle in ds.circle
+                ]
+            ),
+        )
+    )
+
+
+def assign_circle_var_to_sondes(ds, var):
+    return ds.assign(
+        {
+            f"{var}_sonde": (
+                ("sonde", "altitude"),
+                np.concat(
+                    [
+                        np.stack(
+                            ([ds.sel(circle=circle)[var].values],)
+                            * int(ds.sel(circle=circle).sondes_per_circle.values),
+                            axis=0,
+                        ).squeeze()
+                        for circle in ds.circle
+                    ],
+                    axis=0,
+                ),
+            ),
+        }
+    )
