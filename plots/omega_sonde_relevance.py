@@ -17,9 +17,10 @@ lev4 = xr.open_dataset(
 
 # %%
 cm = 1 / 2.54
+sns.set_context("paper", font_scale=0.8)
 plt.style.use("./beach.mplstyle")
 sns.set_palette("bright")
-err = lev4.omega_sonde_relevance
+err = lev4.omega_sonde_relevance * 0.01 * (60 * 60)
 binsize = 200
 sig_om_err = err  # .where(original_values > 1)
 bins_div = np.linspace(sig_om_err.min().values, sig_om_err.max().values, binsize)
@@ -61,7 +62,7 @@ sns.histplot(
     ax=axes[0, 0],
 )
 axes[0, 0].set_ylabel("")
-sns.despine(offset={"left": 10})
+sns.despine(offset={"left": 5})
 
 cbaxes = axes[1, 0].inset_axes((0.8, 0.03, 0.04, 0.3))
 cbar = fig.colorbar(
@@ -84,25 +85,27 @@ for circle in circles:
         sonde=slice(sonde_idx[circle].values, sonde_idx[circle + 1].values)
     )
     for ax in axes[1, 1:]:
-        ds.omega.plot(y="altitude", ax=ax, label=ds.circle_id.values)
+        omega = ds.omega * 0.01 * (60 * 60)
+        omega_std = ds.omega_std_error * 0.01 * (60 * 60)
+        omega.plot(y="altitude", ax=ax, label=ds.circle_id.values)
     axes[1, 1].fill_betweenx(
         ds.altitude,
-        ds.omega - ds.omega_std_error,
-        ds.omega + ds.omega_std_error,
+        omega - omega_std,
+        omega + omega_std,
         alpha=0.2,
     )
 
     axes[1, 2].fill_betweenx(
         ds.altitude,
-        ds.omega + sonde_ds.omega_sonde_relevance.min(),
-        ds.omega + sonde_ds.omega_sonde_relevance.max(),
+        omega + (sonde_ds.omega_sonde_relevance * 0.01 * (60 * 60)).min(),
+        omega + (sonde_ds.omega_sonde_relevance * 0.01 * (60 * 60)).max(),
         alpha=0.2,
     )
 for ax in axes[1, 1:]:
     ax.set_ylabel("")
     ax.set_xlabel("omega / hPa hr-1")
-axes[1, 1].set_title("Regression Standard Error")
-axes[1, 2].set_title("Sonde Relevance for Circle")
+axes[1, 1].set_title("Regression Standard Error", fontsize=6)
+axes[1, 2].set_title("Sonde Relevance for Circle", fontsize=6)
 axes[1, 1].legend(loc=2, fontsize=3)
 for ax in axes[0, 1:]:
     ax.set_axis_off()
